@@ -19,6 +19,8 @@ def load_providers(session, filename):
 		header = csvfile.next()
 		copyright = csvfile.next()
 
+		provider_dict = {}
+
 		lines = csv.reader(csvfile, delimiter = '\t')
 
 		for line in lines:
@@ -39,11 +41,12 @@ def load_providers(session, filename):
 			provider.specialty = line[13].strip() 
 			provider.mc_participation = line[14].strip()
 
-			Try
-			short_zip = int(provider.zipcode) // 10000
-			#print short_zip 
-			if short_zip in SF_ZIPS:
-				session.add(provider)
+			if provider_dict.get(provider.npi) == None:
+				if provider.country == 'US':
+					short_zip = int(provider.zipcode[:5])
+					if short_zip in SF_ZIPS:
+						provider_dict[provider.npi] = 0
+						session.add(provider)
 
 		session.commit()
 

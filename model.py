@@ -4,11 +4,7 @@ from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
 from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session
 
 
-ENGINE = create_engine("sqlite:///medicare_claims.db", echo=True)
-Session = sessionmaker(bind = ENGINE)
-
 Base = declarative_base()
-Base.metadata.create_all(ENGINE)
 
 class Provider(Base):
 	"""All of the providers who submitted medicare claims in 2012"""
@@ -31,28 +27,28 @@ class Provider(Base):
 	mc_participation 	= Column(String(5), nullable = True) 
 
 
-# class Claim(Base):
-# 	"""Each row is a type of claim submitted in the calendar year 2012"""
-# 	__tablename__ = "claims"
+class Claim(Base):
+	"""Each row is a type of claim submitted in the calendar year 2012"""
+	__tablename__ = "claims"
 
-# 	id 					= Column(Integer, primary_key = True, 
-# 										sqlite_autoincrement = True) 
-# 	npi 				= Column(Integer, nullable = True)
-# 	svc_place 			= Column(String(5), nullable = True)
-# 	hcpsc_code 			= Column(Integer, nullable = True)
-# 	hspcs_descr 		= Column(String(64), nullable = True)
-# 	# number of times this service was billed
-# 	line_svc_cnt 		= Column(Integer, nullable = True)
-# 	# number of unique patients who received this service 
-# 	bene_unique 		= Column(Integer, nullable = True)
-# 	# number of unique patients who recieved this service per day
-# 	bene_day_svc_cnt 	= Column(Integer, nullable = True)
-# 	avg_mc_allowed 		= Column(Float, nullable = True)
-# 	sd_mc_allowed 		= Column(Float, nullable = True)
-# 	avg_submitted_chrg 	= Column(Float, nullable = True)
-# 	sd_submitted_chrg 	= Column(Float, nullable = True)
-# 	avg_mc_payment 		= Column(Float, nullable = True)
-# 	sd_mc_payment 		= Column(Float, nullable = True)
+	id 					= Column(Integer, primary_key = True) 
+										#sqlite_autoincrement = True) 
+	npi 				= Column(Integer, nullable = True)
+	svc_place 			= Column(String(5), nullable = True)
+	hcpsc_code 			= Column(Integer, nullable = True)
+	hspcs_descr 		= Column(String(64), nullable = True)
+	# number of times this service was billed
+	line_svc_cnt 		= Column(Integer, nullable = True)
+	# number of unique patients who received this service 
+	bene_unique 		= Column(Integer, nullable = True)
+	# number of unique patients who recieved this service per day
+	bene_day_svc_cnt 	= Column(Integer, nullable = True)
+	avg_mc_allowed 		= Column(Float, nullable = True)
+	sd_mc_allowed 		= Column(Float, nullable = True)
+	avg_submitted_chrg 	= Column(Float, nullable = True)
+	sd_submitted_chrg 	= Column(Float, nullable = True)
+	avg_mc_payment 		= Column(Float, nullable = True)
+	sd_mc_payment 		= Column(Float, nullable = True)
 
 
 def connect():
@@ -64,3 +60,10 @@ def connect():
 
     return Session()
 
+def main():
+	pass
+	# engine = create_engine("sqlite:///medicare_claims.db", echo=True)
+	# Base.metadata.create_all(engine)
+
+if __name__ == "__main__":
+	main()
