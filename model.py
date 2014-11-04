@@ -6,6 +6,11 @@ from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session
 
 Base = declarative_base()
 
+ENGINE = create_engine("sqlite:///medicare_claims.db", echo=True)
+session = scoped_session(sessionmaker(bind = ENGINE,
+                                        autocommit = False,
+                                        autoflush = False))
+
 class Provider(Base):
 	"""All of the providers who submitted medicare claims in 2012"""
 	__tablename__ = "providers"

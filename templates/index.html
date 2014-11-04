@@ -1,12 +1,32 @@
 <html>
 	<head>
 		<title>WhichDoctor</title>
+		<script src="/static/jquery.js"></script>
 	</head>
 	<body>
 		<h1>What are you looking for?</h1>
-		<form action='search_results' id='search_form'>
-			<input type='text' id='npi'></input>
-			<button type='submit'>Search</button>
+		<form id='search_form'>
+			<input type='text' id='npi' name='npi'></input>
+			<button type='submit' id='get-doctors'>Search</button>
 		</form>
+
+		<div id='display-doctors'>
+			
+		</div>
+
+		<script>
+
+			$("#search_form").on('submit', function(event){
+
+				event.preventDefault();
+
+				var url = "/search_results?"+ $("#search_form").serialize();
+
+				console.log(url);
+
+				$('#display-doctors').load(url);
+			})
+
+		</script>
 	</body>
 </html>

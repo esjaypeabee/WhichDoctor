@@ -47,7 +47,6 @@ def load_providers(session, filename):
 					if short_zip in SF_ZIPS:
 						provider_dict[provider.npi] = 0
 						session.add(provider)
-
 		session.commit()
 
 def load_claims(session, filename):
