@@ -3,16 +3,20 @@
        <thead>
           <tr>
              <th>Doctor</th>
-             <th>Avg. Claim</th>
+             <th>Specialty</th>
           </tr>
        </thead>
        <tbody>
+
+          {% for doctor in doctor_list %}
 
             <tr>
                 <td> <a> {{ doctor.givenname }} {{ doctor.surname }}, {{ doctor.credential }}</a> </td>
                 <td> {{ doctor.specialty }} </td>
             </tr>
-
+          
+          {% endfor %}
+          
          </tbody>
     </table>
 </html>
