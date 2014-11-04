@@ -12,15 +12,38 @@ def index():
 
 @app.route("/search_results")
 def search_results():
-	"""Displays a list of doctors matching a speciality"""
+	"""Displays a list of doctors matching a speciality in a zipcode"""
 	# change this later to be specialty. Get speciality as a dropdown menu??
-	# npi = request.args.get("npi")
-	zipcode = request.args.get("zipcode")
-	# print npi
-	doctor_list = model.session.query(model.Provider).filter_by(zipcode=zipcode).limit(20).all()
+	zipcode = int(request.args.get("zipcode"))
+	hspcscode = request.args.get("hspcs-code")
 
-	# later change this back to doctor_list and include a for loop in the
-	# search results
+	# need to make this not break with multiple inputs
+	# need to make a query that can handle filtering doctors by procedure and 
+	# zip code and limit to 20.
+	if not hspcscode:
+		print "no super dooper code"
+		doctor_list = model.session.query(model.Provider).\
+		filter_by(zipcode = zipcode).limit(20).all()
+	elif not zipcode:
+		print "nowhere man"
+		claim_list = model.session.query(model.Claim).\
+		filter_by(hcpsc_code = hspcscode).limit(20).all()
+		doctor_list = []
+		for claim in claim_list:
+			doctor_list.append(claim.provider)
+	elif not zipcode and not hspcscode:
+		return "Please enter a value"
+	else:
+		print " I has both things!!!"
+		claim_list = model.session.query(model.Claim).\
+		filter_by(hcpsc_code = hspcscode).all()
+		doctor_list = []
+		for claim in claim_list:
+			print claim.provider.zipcode // 10000
+			if claim.provider.zipcode // 10000 == zipcode:
+				doctor_list.append(claim.provider)
+
+	print doctor_list
 
 	return render_template('search_results.html', doctor_list = doctor_list)
 
