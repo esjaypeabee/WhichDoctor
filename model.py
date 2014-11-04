@@ -32,8 +32,8 @@ class Claim(Base):
 	__tablename__ = "claims"
 
 	id 					= Column(Integer, primary_key = True) 
-										#sqlite_autoincrement = True) 
-	npi 				= Column(Integer, nullable = True)
+	npi 				= Column(Integer, ForeignKey('providers.npi'),
+							nullable = True)
 	svc_place 			= Column(String(5), nullable = True)
 	hcpsc_code 			= Column(Integer, nullable = True)
 	hspcs_descr 		= Column(String(64), nullable = True)
@@ -49,6 +49,8 @@ class Claim(Base):
 	sd_submitted_chrg 	= Column(Float, nullable = True)
 	avg_mc_payment 		= Column(Float, nullable = True)
 	sd_mc_payment 		= Column(Float, nullable = True)
+
+	provider = relationship("Provider", backref=backref("claims", order_by=id))
 
 
 def connect():

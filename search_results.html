@@ -1,0 +1,21 @@
+<html>
+	<table class="table table-striped" id=>
+       <caption>{{movie.title}}</caption> <!-- later change this to username instead of "you" -->
+       <thead>
+          <tr>
+             <th>Doctor</th>
+             <th>Avg. Claim</th>
+          </tr>
+       </thead>
+       <tbody>
+
+           {% for doctor in doctor_list%}
+            <tr>
+                <td> <a> {{ doctor.givenname }} {{ doctor.surname }}</a> </td>
+                <td> {{rating.rating}} </td>
+            </tr>
+            {% endfor %}
+
+         </tbody>
+    </table>
+</html>
