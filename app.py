@@ -15,49 +15,25 @@ def search_results():
 	"""Displays a list of doctors matching a speciality in a zipcode"""
 	# change this later to be specialty. Get speciality as a dropdown menu??
 	zipcode = request.args.get("zipcode")
-	hspcscode = request.args.get("hspcs-code")
+	hspcs_code = request.args.get("hspcs-code")
 
-	# need to make this not break with multiple inputs
-	# need to make a query that can handle filtering doctors by procedure and 
-	# zip code and limit to 20.
-	if hspcscode == '':
-		# print "no super dooper code"
-		zipcode = int(zipcode)
-		doctor_list = model.session.query(model.Provider).\
-		filter_by(zipcode = zipcode).limit(20).all()
-	elif zipcode == '':
-		# print "nowhere man"
-		claim_list = model.session.query(model.Claim).\
-		filter_by(hcpcs_code = hspcscode).limit(20).all()
-		doctor_list = []
-		for claim in claim_list:
-			doctor_list.append(claim.provider)
-	elif zipcode == '' and hspcscode == '':
+	session = model.connect()
+
+	query = session.query(model.Provider)
+
+	if zipcode == '' and hspcs_code == '':
 		return "Please enter a value"
+
 	else:
-		# print " I has both things!!!"
-		zipcode = int(zipcode)
-		claim_list = model.session.query(model.Claim).\
-		filter_by(hcpcs_code = hspcscode).all()
-		doctor_list = []
-		for claim in claim_list:
-			# print claim.provider.zipcode // 10000
-			if claim.provider.zipcode // 10000 == zipcode:
-				doctor_list.append(claim.provider)
 
+		if hspcs_code != '':
+			query = query.join(model.Claim).filter(model.Claim.hcpcs_code == hspcs_code)
 
-		# doctor_list = model.session.query(model.Claim).join(model.Claim.provider).\
-		# filter_by(hcpsc_code=hspcscode).all()
-		# for doctor in doctor_list:
-		# 	if doctor.zipcode > 99999: 
-		# 		if doctor.zipcode // 10000 != zipcode:
-		# 			doctor_list.remove(doctor)
-		# 	else:
-		# 		if doctor.zipcode != zipcode:
-		# 			doctor_list.remove(doctor)
+		if zipcode != '':
+			query = query.filter(model.Provider.short_zip == int(zipcode[:5]))
+			print query
 
-
-	print doctor_list
+	doctor_list = query.limit(20).all()
 
 	return render_template('search_results.html', doctor_list = doctor_list)
 

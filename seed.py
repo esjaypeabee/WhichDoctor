@@ -74,7 +74,7 @@ def load_claims(session, filename):
 					claim.npi 				 = line[0].strip()
 					claim.svc_place 		 = line[15].strip()
 					claim.hcpcs_code 		 = line[16].strip()
-					claim.hspcs_descr 		 = line[17].strip()
+					claim.hcpcs_descr 		 = line[17].strip()
 					claim.line_svc_cnt 		 = line[18].strip()
 					claim.bene_unique 		 = line[19].strip()
 					claim.bene_day_svc_cnt 	 = line[20].strip()
