@@ -10,10 +10,10 @@ SF_ZIPS = [94102, 94103, 94104, 94105,
 			94129, 94130, 94131, 94132, 
 			94133, 94134, 94158]
 
-provider_dict = {}
+
 
 def load_providers(session, filename):
-	global provider_dict
+	provider_dict = {}
 
 	with open(filename, 'rb') as csvfile:
 
@@ -24,6 +24,7 @@ def load_providers(session, filename):
 		lines = csv.reader(csvfile, delimiter = '\t')
 
 		for line in lines:
+			# print "building a provider"
 			provider = model.Provider()
 			provider.npi 			  = line[0].strip()
 			provider.surname 		  = line[1].strip() 
@@ -35,33 +36,32 @@ def load_providers(session, filename):
 			provider.addy1 			  = line[7].strip() 
 			provider.addy2 			  = line[8].strip() 
 			provider.city 			  = line[9].strip() 
-			provider.zipcode 		  = line[10].strip() 
+			provider.zipcode 		  = line[10].strip()
+			provider.short_zip		  = provider.zipcode[:5]
 			provider.state 			  = line[11].strip() 
 			provider.country		  = line[12].strip()  
 			provider.specialty 		  = line[13].strip() 
 			provider.mc_participation = line[14].strip()
-
 			if provider_dict.get(provider.npi) == None:
-				if provider.country == 'US':
-					short_zip = int(provider.zipcode[:5])
-					if short_zip in SF_ZIPS:
-						provider_dict[provider.npi] = 0
-						session.add(provider)
+				print "check if in provider_dict"
+				provider_dict[provider.npi] = 0
+				if provider.country == 'US' and (int(provider.short_zip) in SF_ZIPS):
+					session.add(provider)
+					print "adding provider to session"
 		session.commit()
 
 def load_claims(session, filename):
-	global provider_dict
 
 	with open(filename, 'rb') as csvfile:
 
-		print "Load claims got called!"
+		# print "Load claims got called!"
 
 		# get rid of header line and copyright statement
 		header = csvfile.next()
 		copyright = csvfile.next()
 
 		lines = csv.reader(csvfile, delimiter = '\t')
-		print "broke apart the lines"
+
 
 		for line in lines:
 			if line[12].strip() == 'US':
@@ -73,7 +73,7 @@ def load_claims(session, filename):
 					claim = model.Claim()
 					claim.npi 				 = line[0].strip()
 					claim.svc_place 		 = line[15].strip()
-					claim.hcpsc_code 		 = line[16].strip()
+					claim.hcpcs_code 		 = line[16].strip()
 					claim.hspcs_descr 		 = line[17].strip()
 					claim.line_svc_cnt 		 = line[18].strip()
 					claim.bene_unique 		 = line[19].strip()

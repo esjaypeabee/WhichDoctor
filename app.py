@@ -21,27 +21,39 @@ def search_results():
 	# need to make a query that can handle filtering doctors by procedure and 
 	# zip code and limit to 20.
 	if not hspcscode:
-		print "no super dooper code"
+		# print "no super dooper code"
 		doctor_list = model.session.query(model.Provider).\
 		filter_by(zipcode = zipcode).limit(20).all()
 	elif not zipcode:
-		print "nowhere man"
+		# print "nowhere man"
 		claim_list = model.session.query(model.Claim).\
-		filter_by(hcpsc_code = hspcscode).limit(20).all()
+		filter_by(hcpcs_code = hspcscode).limit(20).all()
 		doctor_list = []
 		for claim in claim_list:
 			doctor_list.append(claim.provider)
 	elif not zipcode and not hspcscode:
 		return "Please enter a value"
 	else:
-		print " I has both things!!!"
+		# print " I has both things!!!"
 		claim_list = model.session.query(model.Claim).\
-		filter_by(hcpsc_code = hspcscode).all()
+		filter_by(hcpcs_code = hspcscode).all()
 		doctor_list = []
 		for claim in claim_list:
-			print claim.provider.zipcode // 10000
+			# print claim.provider.zipcode // 10000
 			if claim.provider.zipcode // 10000 == zipcode:
 				doctor_list.append(claim.provider)
+
+
+		# doctor_list = model.session.query(model.Claim).join(model.Claim.provider).\
+		# filter_by(hcpsc_code=hspcscode).all()
+		# for doctor in doctor_list:
+		# 	if doctor.zipcode > 99999: 
+		# 		if doctor.zipcode // 10000 != zipcode:
+		# 			doctor_list.remove(doctor)
+		# 	else:
+		# 		if doctor.zipcode != zipcode:
+		# 			doctor_list.remove(doctor)
+
 
 	print doctor_list
 

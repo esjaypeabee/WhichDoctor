@@ -25,7 +25,8 @@ class Provider(Base):
 	addy1 				= Column(String(64), nullable = True) 
 	addy2 				= Column(String(64), nullable = True) 
 	city 				= Column(String(64), nullable = True) 
-	zipcode 			= Column(Integer, nullable = True) 
+	zipcode 			= Column(Integer, nullable = True)
+	short_zip			= Column(Integer, nullable = True) 
 	state 				= Column(String(5), nullable = True) 
 	country 			= Column(String(5), nullable = True)  
 	specialty 			= Column(String(64), nullable = True) 
@@ -40,8 +41,8 @@ class Claim(Base):
 	npi 				= Column(Integer, ForeignKey('providers.npi'),
 							nullable = True)
 	svc_place 			= Column(String(5), nullable = True)
-	hcpsc_code 			= Column(Integer, nullable = True)
-	hspcs_descr 		= Column(String(64), nullable = True)
+	hcpcs_code 			= Column(Integer, nullable = True)
+	hcpcs_descr 		= Column(String(64), nullable = True)
 	# number of times this service was billed
 	line_svc_cnt 		= Column(Integer, nullable = True)
 	# number of unique patients who received this service 
