@@ -32,10 +32,13 @@ class Provider(Base):
 	specialty 			= Column(String(64), nullable = True) 
 	mc_participation 	= Column(String(5), nullable = True) 
 
-	def priciness(self, code):
+	def priciness(self, code=None):
 		charges = []
 		for claim in self.claims:
-			if claim.hcpcs_code == code:
+			if code:
+				if claim.hcpcs_code == code:
+					charges.append(claim.avg_submitted_chrg)
+			else: 
 				charges.append(claim.avg_submitted_chrg)
 
 		return (sum(charges))/len(charges)

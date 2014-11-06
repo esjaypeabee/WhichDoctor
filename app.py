@@ -24,29 +24,52 @@ def search_results():
 
 	query = session.query(model.Provider)
 
+	base_avg = None
+
 	if zipcode == '' and hcpcs_code == '':
 		return "Please enter a value"
 
 	else:
 		if hcpcs_code != '':
-			base_avg = calc_base_avg(hcpcs_code)
+			base_avg = calc_base_avg(hcpcs_code = hcpcs_code)
 			query = query.join(model.Claim).filter(model.Claim.hcpcs_code == hcpcs_code)
+			hcpcs_code = int(hcpcs_code)
+		else:
+			hcpcs_code = None 
 		if zipcode != '':
 			query = query.filter(model.Provider.short_zip == int(zipcode[:5]))
 
 	doctor_list = query.limit(20).all()
+	print "I have a doctor list!"
+
+	if base_avg == None:
+		print "passing the doctor list to base avg"
+		base_avg = calc_base_avg(doctor_list =doctor_list)
+		print "got a base_avg = ", base_avg
 	for doctor in doctor_list:
-		dr_avg = doctor.priciness(int(hcpcs_code))
+		print "I calculated each doctor's priciness."
+		dr_avg = doctor.priciness(hcpcs_code)
 		doctor.rel_cost = ((dr_avg - base_avg)/base_avg)*100
 
 	return render_template('search_results.html', doctor_list = doctor_list)
 
-def calc_base_avg(hcpcs_code):
+def calc_base_avg(hcpcs_code=None, doctor_list=None):
 	session = model.connect()
 
 	# returns a list of tuples - is there a better way?
-	claim_prices_tup = session.query(model.Claim.avg_submitted_chrg).\
-		filter_by(hcpcs_code = hcpcs_code).all()
+	if hcpcs_code:
+		claim_prices_tup = session.query(model.Claim.avg_submitted_chrg).\
+			filter_by(hcpcs_code = hcpcs_code).all()
+	if doctor_list:
+		print "I got a doctor_list in calc_base_avg"
+		claim_prices_tup = []
+		print "assigned claim_prices_tup"
+		for doctor in doctor_list:
+			claim_prices_tup[-1:] = session.query(model.Claim.avg_submitted_chrg).\
+				filter_by(npi = doctor.npi).all()
+
+	print "got a new claim_prices_tup = ", claim_prices_tup
+
 
 	claim_prices = []
 	for price in claim_prices_tup:
