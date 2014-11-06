@@ -4,6 +4,7 @@
           <tr>
              <th>Doctor</th>
              <th>Specialty</th>
+             <th>Relative Cost</th.
           </tr>
        </thead>
        <tbody>
@@ -13,6 +14,7 @@
             <tr>
                 <td> <a> {{ doctor.givenname }} {{ doctor.surname }}, {{ doctor.credential }}</a> </td>
                 <td> {{ doctor.specialty }} </td>
+                <td> {{ doctor.rel_cost }} %</td>
             </tr>
           
           {% endfor %}

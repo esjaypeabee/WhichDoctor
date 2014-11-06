@@ -32,6 +32,16 @@ class Provider(Base):
 	specialty 			= Column(String(64), nullable = True) 
 	mc_participation 	= Column(String(5), nullable = True) 
 
+	def priciness(self, code):
+		charges = []
+		for claim in self.claims:
+			if claim.hcpcs_code == code:
+				charges.append(claim.avg_submitted_chrg)
+
+		return (sum(charges))/len(charges)
+
+
+
 
 class Claim(Base):
 	"""Each row is a type of claim submitted in the calendar year 2012"""
