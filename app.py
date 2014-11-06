@@ -40,14 +40,11 @@ def search_results():
 			query = query.filter(model.Provider.short_zip == int(zipcode[:5]))
 
 	doctor_list = query.limit(20).all()
-	print "I have a doctor list!"
 
 	if base_avg == None:
-		print "passing the doctor list to base avg"
 		base_avg = calc_base_avg(doctor_list =doctor_list)
-		print "got a base_avg = ", base_avg
+
 	for doctor in doctor_list:
-		print "I calculated each doctor's priciness."
 		dr_avg = doctor.priciness(hcpcs_code)
 		doctor.rel_cost = ((dr_avg - base_avg)/base_avg)*100
 
@@ -58,26 +55,15 @@ def calc_base_avg(hcpcs_code=None, doctor_list=None):
 
 	# returns a list of tuples - is there a better way?
 	if hcpcs_code:
-		claim_prices_tup = session.query(model.Claim.avg_submitted_chrg).\
-			filter_by(hcpcs_code = hcpcs_code).all()
+		claims = session.query(model.Claim).filter_by(hcpcs_code = hcpcs_code).all()
+
 	if doctor_list:
-		print "I got a doctor_list in calc_base_avg"
-		claim_prices_tup = []
-		print "assigned claim_prices_tup"
-		for doctor in doctor_list:
-			claim_prices_tup[-1:] = session.query(model.Claim.avg_submitted_chrg).\
-				filter_by(npi = doctor.npi).all()
-
-	print "got a new claim_prices_tup = ", claim_prices_tup
-
-
-	claim_prices = []
-	for price in claim_prices_tup:
-		claim_prices.append(price[0])
-
+		npi_list = [doctor.npi for doctor in doctor_list]
+		# this runs a separate query for each npi in the list - is there a better way?
+		claims = session.query(model.Claim).filter(model.Claim.npi.in_(npi_list)).all()
+		
+	claim_prices = [claim.avg_submitted_chrg for claim in claims]
 	return sum(claim_prices)/len(claim_prices)
 
 if __name__ == '__main__':
 	app.run(debug=True)
-
-	#print "Average is", calc_base_avg(36415)
