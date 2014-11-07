@@ -12,7 +12,12 @@ term_dict = {'bone': 'ortho',
 			 'surgeon': 'surg', 
 			 'cancer': 'onco',
 			 'blood': 'hema', 
-			 'kidney': 'nephro'}
+			 'kidney': 'nephro',
+			 'stomach': 'gastro',
+			 'chiropractor': 'chiro'}
+			 # maybe change these to regex to handle misspellings?
+
+toss_words = ['doctor', 'room']
 
 def search_specialty(term):
 	session = model.connect()	
@@ -22,23 +27,21 @@ def search_specialty(term):
 
 	for word in term_list:
 
-		if word in term_dict.keys():
-			query_words = query_words + '%'+(term_dict[word])+'%'
-		elif re.search('log', word):
-			loc = re.search('log', word)
+		word = word.lower()
+
+		if re.search('ist', word):
+			loc = re.search('ist', word)
 			word = word[:loc.start()]
 
-			print "\n\n *************** new word ************** \n\n"
-			print word
-
-			query_words = query_words + '%'+(word)+'%'
-
-		elif word.lower() == 'doctor':
+		if word in toss_words:
 			continue
+		elif word in term_dict.keys():
+			query_words = query_words + '%'+(term_dict[word])+'%'
 		else:
 			query_words = query_words + '%'+(word)+'%'
 
 	print "\n\n ********************* query words ******************** \n\n"
+
 	print query_words
 
 	dr_list = session.query(model.Provider).filter(model.Provider.specialty.like(query_words)).all()
@@ -54,7 +57,7 @@ def search_specialty(term):
 
 def main():
 	
-	search_specialty("cancer doctor")
+	search_specialty("ear doctor")
 
 if __name__ == '__main__':
 	main()
