@@ -1,9 +1,6 @@
-<html>
-	<head>
-		<title>WhichDoctor</title>
-		<script src="/static/jquery.js"></script>
-	</head>
-	<body>
+{% extends 'base.html' %}
+{% block body %}
+
 		<h1>What are you looking for?</h1>
 		<form id='search_form'>
 		<!-- 	<input type='text' id='npi' name='npi'></input> -->
@@ -30,5 +27,4 @@
 			})
 
 		</script>
-	</body>
-</html>
+{% endblock %}
