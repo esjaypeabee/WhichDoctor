@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<div class='provider-card' id='provider-card'>
+
+	{{ provider.givenname }} {{ provider.surname }}{% if provider.credential %}, {{ provider.credential }} {% endif %} <br>
+	{{ provider.addy1 }} <br>
+	{% if provider.addy2 %}{{provider.addy2}} <br> {% endif %} 
+	{{ provider.city }}, {{ provider.state }}<br>
+	{{ provider.short_zip }}
+
+</div>
+
+
+{% endblock %}

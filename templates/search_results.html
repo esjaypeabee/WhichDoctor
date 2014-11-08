@@ -12,7 +12,7 @@
           {% for doctor in doctor_list %}
 
             <tr>
-                <td> <a> {{ doctor.givenname }} {{ doctor.surname }}, {{ doctor.credential }}</a> </td>
+                <td> <a href="/provider?id={{ doctor.npi }}"> {{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}</a> </td>
                 <td> {{ doctor.specialty }} </td>
                 <td> {{ doctor.rel_cost }} %</td>
             </tr>
