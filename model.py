@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, or_
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, Text, Boolean
 from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session
 
 
@@ -70,6 +70,15 @@ class Claim(Base):
 	sd_mc_payment 		= Column(Float, nullable = True)
 
 	provider = relationship("Provider", backref=backref("claims", order_by=id))
+
+class Terms(Base):
+
+	__tablename__ = 'terms'
+
+	id 					= Column(Integer, primary_key = True)
+	regex = Column(String(64))
+	actual_form = Column(Text)
+	procedure = Column(Boolean)
 
 
 def connect():
