@@ -80,5 +80,15 @@ def calc_base_avg(hcpcs_code=None, doctor_list=None):
 	claim_prices = [claim.avg_submitted_chrg for claim in claims]
 	return sum(claim_prices)/len(claim_prices)
 
+@app.route('/provider')
+def display_provider():
+	npi = request.args.get("id")
+
+	session = model.connect()
+
+	provider = session.query(model.Provider).get(npi)
+
+	return render_template('provider_page.html', provider = provider)
+
 if __name__ == '__main__':
 	app.run(debug=True)
