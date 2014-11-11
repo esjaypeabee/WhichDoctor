@@ -27,41 +27,43 @@ def search_specialty(term):
 	term_list = term.split()
 
 	# Load in terms we know about here so we're not querying them multiple times.
-	db_search_terms = session.query(model.Terms).all()
-	db_search_terms = [{
-		'term': re.compile(x.regex),
-		'actual': ['%%%s%%' % (y) for y in x.actual_form.split(',')],
-		'procedure': x.procedure}
-		for x in db_search_terms
-	]
+	# db_search_terms = session.query(model.Terms).all()
+	# db_search_terms = [{
+	# 	'term': re.compile(x.regex),
+	# 	'actual': ['%%%s%%' % (y) for y in x.actual_form.split(',')],
+	# 	'procedure': x.procedure}
+	# 	for x in db_search_terms
+	# ]
 
 	query_terms = []
 
 	for word in term_list:
 		word = word.lower()
 
-		if re.search('ist', word):
-			loc = re.search('ist', word)
-			word = word[:loc.start()]
+		# if re.search('ist', word):
+		# 	loc = re.search('ist', word)
+		# 	word = word[:loc.start()]
 
-		if word in toss_words:
-			continue
+		if word not in toss_words:
+			query_terms.append(word)
 
-		matched = False
-		for db_term in db_search_terms:
-			if len(db_term['term'].findall(word)) > 0:
-				query_terms = query_terms + db_term['actual']
-				matched = True
+		# matched = False
+		# for db_term in db_search_terms:
+		# 	if len(db_term['term'].findall(word)) > 0:
+		# 		query_terms = query_terms + db_term['actual']
+		# 		matched = True
 
-		if not matched:
-			query_terms.append('%'+(word)+'%')
+		# if not matched:
+		# 	query_terms.append('%'+(word)+'%')
 
 	print "\n\n ********************* query words ******************** \n\n"
 
 	print query_terms
 	#SELECT * FROM providers WHERE specialty LIKE "%opt%" OR specialty LIKE '%opht%';
 	#dr_list = session.query(Provider).filter(or_ (Provider.specialty.like('%opt%'), Provider.specialty.like('%opht%'))).all()
-	dr_list = session.query(model.Provider).filter(or_(*[model.Provider.specialty.like(x) for x in query_terms])).all()
+	specialty_list = session.query(model.Lookup).filter(*[model.Lookup.search_term.like(x) for x in query_terms]).all()
+	print specialty_list
+	dr_list = session.query(model.Provider).filter(or_(*[model.Provider.specialty.like(lookup.specialty) for lookup in specialty_list])).all()
 
 	print "\n\n ********************* Doctor List ******************** \n\n"
 
@@ -74,7 +76,7 @@ def search_specialty(term):
 
 def main():
 	
-	search_specialty('optometry')
+	search_specialty('')
 	# search_specialty("chiroalknvowia;")
 
 if __name__ == '__main__':
