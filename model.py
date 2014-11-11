@@ -71,14 +71,14 @@ class Claim(Base):
 
 	provider = relationship("Provider", backref=backref("claims", order_by=id))
 
-class Terms(Base):
+class Lookup(Base):
 
-	__tablename__ = 'terms'
+	__tablename__ = 'lookup'
 
-	id 					= Column(Integer, primary_key = True)
-	regex = Column(String(64))
-	actual_form = Column(Text)
-	procedure = Column(Boolean)
+	id = Column(Integer, primary_key = True)
+	search_term = Column(String(64))
+	specialty = Column(Text)
+	
 
 
 def connect():

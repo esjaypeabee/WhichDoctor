@@ -88,12 +88,25 @@ def load_claims(session, filename):
 
 		session.commit()
 
+def load_specialty_lookup(session, filename):
+
+	with open(filename, 'rb') as csvfile:
+
+		lines = csv.reader(csvfile, delimiter = ',')
+		for line in lines:
+			lookup = model.Lookup()
+			lookup.search_term = line[0].strip()
+			lookup.specialty = line[1].strip()
+			session.add(lookup)
+
+	session.commit()
 
 
 def main(session):
     # when running for real, remove echo = true
     # load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    load_claims(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    # load_claims(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    load_specialty_lookup(session, "Data/specialtylookup.csv")
 
 
 
