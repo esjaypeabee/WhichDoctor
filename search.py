@@ -10,7 +10,7 @@ term_dict = {'bone': ['ortho'],
 			 'heart': ['card'],
 			 'surgery': ['surg'],
 			 'surgeon': ['surg'],
-			 'eye': ['opto', 'opht'],  #oph*t
+			 'eye': ['opto', 'opht'],  #oph?t
 			 'cancer': ['onco'],
 			 'blood': ['hema'], 
 			 'kidney': ['nephro'],
@@ -52,7 +52,7 @@ def search_specialty(term):
 	print query_words
 	#SELECT * FROM providers WHERE specialty LIKE "%opt%" OR specialty LIKE '%opht%';
 	#dr_list = session.query(Provider).filter(or_ (Provider.specialty.like('%opt%'), Provider.specialty.like('%opht%'))).all()
-	#dr_list = session.query(model.Provider).filter(model.Provider.specialty.like(query_words)).all()
+	dr_list = session.query(model.Provider).filter(model.Provider.specialty.like(query_words)).all()
 
 	print "\n\n ********************* Doctor List ******************** \n\n"
 
@@ -65,7 +65,7 @@ def search_specialty(term):
 
 def main():
 	
-	search_specialty('eye doctor')
+	search_specialty('doctor')
 	# search_specialty("chiroalknvowia;")
 
 if __name__ == '__main__':
