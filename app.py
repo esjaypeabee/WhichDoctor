@@ -37,6 +37,7 @@ def search_results():
 		if search_terms != '':
 			specialties = search.search_specialty(search_terms)
 			query = query.filter(model.Provider.specialty.in_(specialties))
+			base_avg = calc_base_avg(specialties = specialties)
 			# base_avg = calc_base_avg(hcpcs_code = hcpcs_code)
 			# query = query.join(model.Claim).filter(model.Claim.hcpcs_code == hcpcs_code)
 			# hcpcs_code = int(hcpcs_code)
@@ -49,6 +50,8 @@ def search_results():
 
 	# run the query
 	doctor_list = query.limit(20).all()
+	if doctor_list == []:
+		return "No providers match your search! Try searching without a zip code."
 
 	# check to see if base average has already been calculated, if not:
 	# calculate the average based on all the claims from all the doctors.
@@ -72,25 +75,29 @@ def calc_base_avg(hcpcs_code=None, doctor_list=None, specialties=None):
 	#finds all doctors in entire city of SF that match that specialty, extracts
 	#list of npi's
 	if specialties:
-		dr_list = session.query(model.Provider).filter(model.Provider.specialty.in_(specialties))
+		doctor_list = session.query(model.Provider).filter(model.Provider.specialty.in_(specialties))
 		npi_list = [doctor.npi for doctor in doctor_list]
-		
-	# KEEPING THIS FOR NOW BUT IS USELESS UNTIL TREATMENT SEARCH WORKS
-	# finds all claims with a given treatment code
-	# if expand beyond SF, change this to optionally limit by geographic area
-	# if hcpcs_code:
-	# 	claims = session.query(model.Claim).filter_by(hcpcs_code = hcpcs_code).all()
 
+	print "\n\n ******************* Doctor List: specialties in Base Avg ********************* \n\n"
+	for dr in doctor_list:
+		print dr.specialty
 	# finds all claims by all doctors in the list
 	if doctor_list:
 		npi_list = [doctor.npi for doctor in doctor_list]
-		# this runs a separate query for each npi in the list - is there a better way?
-		
 
+	# this runs a separate query for each npi in the list - is there a better way?
 	claims = session.query(model.Claim).filter(model.Claim.npi.in_(npi_list)).all()
 
 	claim_prices = [claim.avg_submitted_chrg for claim in claims]
 	return sum(claim_prices)/len(claim_prices)
+
+	# KEEPING THIS FOR NOW BUT IS USELESS UNTIL TREATMENT SEARCH WORKS
+	# finds all claims with a given treatment code
+	# if expand beyond SF, change this to optionally limit by geographic area
+	# if hcpcs_code:
+	# 	claims = session.query(model.Claim).filter_by(hcpcs_code = hcpcs_code).all()	
+
+
 
 @app.route('/provider')
 def display_provider():

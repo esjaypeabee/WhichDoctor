@@ -245,6 +245,7 @@
 .navbar-brand,
 .navbar-nav > li > a {
   text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
+  color: #FFFFFF;
 }
 .navbar-inverse {
   background-image: -webkit-linear-gradient(top, #3c3c3c 0%, #222 100%);

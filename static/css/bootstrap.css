@@ -6,7 +6,8 @@
 
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
 html {
-  font-family: sans-serif;
+  /*font-family: sans-serif;*/
+  font-family: 'Armata', sans-serif;
   -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
 }
@@ -2085,6 +2086,10 @@ th {
 .table > thead > tr > th {
   vertical-align: bottom;
   border-bottom: 2px solid #ddd;
+  font-size: 125%
+}
+.table > thead > tr > th > span {
+  font-size: 65%
 }
 .table > caption + thead > tr:first-child > th,
 .table > colgroup + thead > tr:first-child > th,
@@ -4294,7 +4299,12 @@ fieldset[disabled] .navbar-default .btn-link:focus {
   border-color: #080808;
 }
 .navbar-inverse .navbar-brand {
-  color: #9d9d9d;
+  /*this block controls whichdoctor in the navbar*/
+  color: #FFFFFF;
+  font-family: 'Armata', sans-serif;
+  font-size: 200%;
+  font-weight: bold;
+  background-color: transparent;
 }
 .navbar-inverse .navbar-brand:hover,
 .navbar-inverse .navbar-brand:focus {

@@ -20,7 +20,7 @@ def search_specialty(term):
 		#check if word is important or not
 		if word not in toss_words:
 			# add it to list of query terms surrounded by percent signs
-			query_terms.append(word + '%')
+			query_terms.append(word)
 
 	#print query_terms
 
