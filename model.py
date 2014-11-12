@@ -33,6 +33,9 @@ class Provider(Base):
 	mc_participation 	= Column(String(5), nullable = True) 
 
 	def priciness(self, code=None):
+		"""If a particular treatment is specified, takes the average
+		submitted charge of this doctor for that treatment. If no treatment, 
+		calculates the average of all of this doctor's claims."""
 		charges = []
 		for claim in self.claims:
 			if code:
@@ -41,6 +44,7 @@ class Provider(Base):
 			else: 
 				charges.append(claim.avg_submitted_chrg)
 
+		self.avg = (sum(charges))/len(charges)
 		return (sum(charges))/len(charges)
 
 

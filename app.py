@@ -58,15 +58,26 @@ def search_results():
 	if base_avg == None:
 		base_avg = calc_base_avg(doctor_list =doctor_list)
 
+	# calculate average claim proce for each doctor, maybe with treatment code
+	avg_claim_amts = [doctor.priciness(hcpcs_code) for doctor in doctor_list]
+
+	# put that into a numpy array, then calculate standard dev and zscore
+	avg_claim_array = numpy.array(avg_claim_amts)
+	stdev = numpy.std(avg_claim_array)
+	mean = numpy.mean(avg_claim_array)
+	for dr in doctor_list:
+		dr.zscore = (dr.avg - mean)/stdev
+
+	# EARLIER VERSION
 	# calculate the average claim price for each doctor, optionally with code
-	for doctor in doctor_list:
-		dr_avg = doctor.priciness(hcpcs_code)
-		doctor.rel_cost = ((dr_avg - base_avg)/base_avg)*100
+	# for doctor in doctor_list:
+	# 	dr_avg = doctor.priciness(hcpcs_code)
+	# 	doctor.rel_cost = ((dr_avg - base_avg)/base_avg)*100
 
 	return render_template('search_results.html', doctor_list = doctor_list)
 
 def calc_base_avg(hcpcs_code=None, doctor_list=None, specialties=None):
-	"""With either a treatment code or a list of providers, caluculate the 
+	"""With either a treatment code or a list of providers, calculate the 
 	average submitted charge across all claims of same type or all doctors in 
 	the list."""
 
