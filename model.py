@@ -37,6 +37,7 @@ class Provider(Base):
 		submitted charge of this doctor for that treatment. If no treatment, 
 		calculates the average of all of this doctor's claims."""
 		charges = []
+		# this hits the database a lot - is there a better way?
 		for claim in self.claims:
 			if code:
 				if claim.hcpcs_code == code:

@@ -2302,12 +2302,12 @@ table th[class*="col-"] {
 }
 
 .dollaz {
-  font-weight: 900;
-  text-shadow:
+  font-weight: 750;
+/*  text-shadow:
     -1px -1px 0 #000,  
      1px -1px 0 #000,
     -1px 1px 0 #000,
-     1px 1px 0 #000;
+     1px 1px 0 #000;*/
 }
 .dollaz .one{
   color: #009933;

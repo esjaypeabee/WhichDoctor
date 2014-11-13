@@ -9,6 +9,7 @@ import numpy
 app = Flask(__name__)
 app.secret_key = 'askjdfiwbueryqaowijfmcw037u41ojmpq9uqije12jnedmp2oq09ef0ccjwo'
 
+PUNCTUATION = '!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~'
 
 @app.route("/")
 def index():
@@ -35,6 +36,7 @@ def search_results():
 	else:
 		# if user entered only a zipcode
 		if search_terms != '':
+			search_terms = ''.join([c for c in search_terms if c not in PUNCTUATION])
 			specialties = search.search_specialty(search_terms)
 			query = query.filter(model.Provider.specialty.in_(specialties))
 			base_avg = calc_base_avg(specialties = specialties)
@@ -105,8 +107,8 @@ def calc_base_avg(hcpcs_code=None, doctor_list=None, specialties=None):
 		doctor_list = session.query(model.Provider).filter(model.Provider.specialty.in_(specialties))
 		npi_list = [doctor.npi for doctor in doctor_list]
 
-	for dr in doctor_list:
-		print dr.specialty
+	# for dr in doctor_list:
+	# 	print dr.specialty
 	# finds all claims by all doctors in the list
 	if doctor_list:
 		npi_list = [doctor.npi for doctor in doctor_list]
