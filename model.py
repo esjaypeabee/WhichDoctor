@@ -38,6 +38,7 @@ class Provider(Base):
 		calculates the average of all of this doctor's claims."""
 		charges = []
 		# this hits the database a lot - is there a better way?
+		# generate table that shows how pricey a docter is per procedure
 		for claim in self.claims:
 			if code:
 				if claim.hcpcs_code == code:
