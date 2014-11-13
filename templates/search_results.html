@@ -14,7 +14,7 @@
             <tr>
                 <td> <a href="/provider?id={{ doctor.npi }}"> {{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}</a> </td>
                 <td> {{ doctor.specialty }} </td>
-                <td> {{ doctor.zscore }} %</td>
+                <td class="dollaz {{doctor.numdollars}}"> {{ doctor.dollars }} </td>
             </tr>
           
           {% endfor %}
@@ -23,11 +23,36 @@
     </table>
     <script>
 
-      $(document).ready(function() 
-        { 
-          $("#drtable").tablesorter(); 
-        } 
-      ); 
+          $.tablesorter.addParser({ 
+          // set a unique id 
+            id: 'numdollars', 
+            is: function(s) { 
+              // return false so this parser is not auto detected 
+              return false; 
+            }, 
+            format: function(s) { 
+              // format your data for normalization 
+              return s.replace('$$$$$',5).replace('$$$$',4).replace('$$$',3).replace('$$',2).replace('$',1); 
+            }, 
+            // set type, either numeric or text 
+            type: 'numeric' 
+          }); 
+
+        $(document).ready(function() 
+          { 
+            $("#drtable").tablesorter({
+
+              headers: { 
+                2: { 
+                    sorter:'numdollars' 
+                } 
+              } 
+
+            }); 
+          } 
+        ); 
       
+
     </script>
+
 </html>

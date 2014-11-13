@@ -66,7 +66,23 @@ def search_results():
 	stdev = numpy.std(avg_claim_array)
 	mean = numpy.mean(avg_claim_array)
 	for dr in doctor_list:
-		dr.zscore = (dr.avg - mean)/stdev
+		zscore = (dr.avg - mean)/stdev
+		if zscore <= -2:
+			dr.dollars = "$"
+			dr.numdollars = "one"
+		elif zscore <= -1:
+			dr.dollars = "$$"
+			dr.numdollars = "two"
+		elif zscore < 1:
+			dr.dollars = "$$$"
+			dr.numdollars = "three"
+		elif zscore < 2:
+			dr.dollars = "$$$$"
+			dr.numdollars = "four"
+		else:
+			dr.dollars = "$$$$$"
+			dr.numdollars = "five"
+
 
 	# EARLIER VERSION
 	# calculate the average claim price for each doctor, optionally with code
@@ -89,7 +105,6 @@ def calc_base_avg(hcpcs_code=None, doctor_list=None, specialties=None):
 		doctor_list = session.query(model.Provider).filter(model.Provider.specialty.in_(specialties))
 		npi_list = [doctor.npi for doctor in doctor_list]
 
-	print "\n\n ******************* Doctor List: specialties in Base Avg ********************* \n\n"
 	for dr in doctor_list:
 		print dr.specialty
 	# finds all claims by all doctors in the list

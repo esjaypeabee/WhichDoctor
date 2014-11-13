@@ -185,6 +185,7 @@ table {
   border-spacing: 0;
   border-collapse: collapse;
 }
+
 td,
 th {
   padding: 0;
@@ -2299,6 +2300,31 @@ table th[class*="col-"] {
     border-bottom: 0;
   }
 }
+
+.dollaz {
+  font-weight: 900;
+  text-shadow:
+    -1px -1px 0 #000,  
+     1px -1px 0 #000,
+    -1px 1px 0 #000,
+     1px 1px 0 #000;
+}
+.dollaz .one{
+  color: #009933;
+}
+.dollaz .two{
+  color: #66ff66;
+}
+.dollaz .three{
+  color: #FFFF00;
+}
+.dollaz .four{
+  color: #FF9999;
+}
+.dollaz .five{
+  color: #CC0000 !important;
+}
+
 fieldset {
   min-width: 0;
   padding: 0;
