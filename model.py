@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, or_
+from sqlalchemy import create_engine, or_, distinct
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, Text, Boolean
 from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session
 

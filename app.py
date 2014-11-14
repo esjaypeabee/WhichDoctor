@@ -3,6 +3,7 @@ from sqlalchemy import func
 import model
 import search
 import numpy
+import lookuptable
 
 #### IT'S HCPCS
 
@@ -21,6 +22,7 @@ def search_results():
 	# change this later to be specialty. Get speciality as a dropdown menu??
 	zipcode = request.args.get("zipcode")
 	search_terms = request.args.get("specialty")
+	procedure = request.args.get("procedure")
 
 	session = model.connect()
 
@@ -30,7 +32,7 @@ def search_results():
 	hcpcs_code = None
 
 	# check if user entered anything
-	if zipcode == '' and search_terms== '':
+	if zipcode == '' and search_terms== '' and procedure == '':
 		return "Please enter a value"
 
 	else:
@@ -52,6 +54,11 @@ def search_results():
 		# if user entered only a diagnosis code 
 		if zipcode != '':
 			query = query.filter(model.Provider.short_zip == int(zipcode[:5]))
+
+		if procedure != '':
+			procedure_codes = lookuptable.lookup_dict[procedure]
+			string = ' '.join(procedure_codes)
+			return string
 
 	# run the query
 	doctor_list = query.limit(20).all()
