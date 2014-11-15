@@ -56,12 +56,18 @@ def search_results():
 			query = query.filter(model.Provider.short_zip == int(zipcode[:5]))
 
 		if procedure != '':
-			procedure_codes = lookuptable.lookup_dict[procedure]
-			string = ' '.join(procedure_codes)
-			return string
+			procedure = ''.join([c for c in procedure if c not in PUNCTUATION])
+			procedure_codes = lookuptable.procedure_dict[procedure]
+			query = query.join(model.Claim).filter(model.Claim.hcpcs_code.in_(procedure_codes))
+			
+			###### TESTING CODE #######
+			# string = ' '.join(str(procedure_codes))
+			# return string
 
 	# run the query
 	doctor_list = query.limit(20).all()
+	npi_list = [doctor.npi for doctor in doctor_list]
+	print "/n/n ************ the npi list: ", npi_list," \n\n"
 	if doctor_list == []:
 		return "No providers match your search! Try searching without a zip code."
 

@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session
 
 Base = declarative_base()
 
-ENGINE = create_engine("sqlite:///medicare_claims.db", echo=True)
+ENGINE = create_engine("sqlite:///medicare_claims.db", echo=False)
 session = scoped_session(sessionmaker(bind = ENGINE,
                                         autocommit = False,
                                         autoflush = False))
