@@ -5,8 +5,8 @@ from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session
 
 
 Base = declarative_base()
-
-ENGINE = create_engine("sqlite:///medicare_claims.db", echo=False)
+# Claim.__table__.create(bind = ENGINE)
+ENGINE = create_engine("postgresql+pg8000://postgres:1234@localhost/medicare_claims", echo=False)
 session = scoped_session(sessionmaker(bind = ENGINE,
                                         autocommit = False,
                                         autoflush = False))
@@ -60,14 +60,14 @@ class Claim(Base):
 	npi 				= Column(Integer, ForeignKey('providers.npi'),
 							nullable = True)
 	svc_place 			= Column(String(5), nullable = True)
-	hcpcs_code 			= Column(Integer, nullable = True)
+	hcpcs_code 			= Column(String(16), nullable = True)
 	hcpcs_descr 		= Column(String(64), nullable = True)
 	# number of times this service was billed
-	line_svc_cnt 		= Column(Integer, nullable = True)
+	line_svc_cnt 		= Column(Float, nullable = True)
 	# number of unique patients who received this service 
-	bene_unique 		= Column(Integer, nullable = True)
+	bene_unique 		= Column(Float, nullable = True)
 	# number of unique patients who recieved this service per day
-	bene_day_svc_cnt 	= Column(Integer, nullable = True)
+	bene_day_svc_cnt 	= Column(Float, nullable = True)
 	avg_mc_allowed 		= Column(Float, nullable = True)
 	sd_mc_allowed 		= Column(Float, nullable = True)
 	avg_submitted_chrg 	= Column(Float, nullable = True)
@@ -81,17 +81,33 @@ class Lookup(Base):
 
 	__tablename__ = 'lookup'
 
-	id = Column(Integer, primary_key = True)
+	id 			= Column(Integer, primary_key = True)
 	search_term = Column(String(64))
-	specialty = Column(Text)
-	
+	specialty   = Column(Text)
 
+class ProcSearchTerm(Base):
+
+	__tablename__ = 'psearchterms'
+
+	id 			= Column(Integer, primary_key = True)
+	word 		= Column(String(64))
+	frequency 	= Column(Integer, nullable = True)
+
+class ClaimLookup(Base):
+
+	__tablename__ = 'claimlookup'
+
+	id 			= Column(Integer, primary_key = True)
+	word_id 	= Column(Integer, ForeignKey('psearchterms.id'))
+	hcpcs_code 	= Column(String(16), nullable = True)
+	
+	searchterm = relationship("ProcSearchTerm", backref=backref("codes", order_by=id))
 
 def connect():
     global ENGINE
     global Session
 
-    ENGINE = create_engine("sqlite:///medicare_claims.db", echo=True)
+    ENGINE = create_engine("postgresql+pg8000://postgres:1234@localhost/medicare_claims", echo=True)
     Session = sessionmaker(bind = ENGINE)
 
     return Session()

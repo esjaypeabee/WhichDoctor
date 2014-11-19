@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, request, session as websession
-from sqlalchemy import func
+from sqlalchemy import func, distinct
 import model
 import search
 import numpy
@@ -26,7 +26,7 @@ def search_results():
 
 	session = model.connect()
 
-	query = session.query(model.Provider)
+	query = session.query(model.Provider).distinct()
 
 	base_avg = None
 	hcpcs_code = None
@@ -36,7 +36,7 @@ def search_results():
 		return "Please enter a value"
 
 	else:
-		# if user entered only a zipcode
+		# if user entered a specialty
 		if search_terms != '':
 			search_terms = ''.join([c for c in search_terms if c not in PUNCTUATION])
 			specialties = search.search_specialty(search_terms)
@@ -51,10 +51,11 @@ def search_results():
 		else:
 			specialties = None
 
-		# if user entered only a diagnosis code 
+		# if user entered a zipcode 
 		if zipcode != '':
 			query = query.filter(model.Provider.short_zip == int(zipcode[:5]))
 
+		# if user entered a procedure name
 		if procedure != '':
 			procedure = ''.join([c for c in procedure if c not in PUNCTUATION])
 			procedure_codes = lookuptable.procedure_dict[procedure]
@@ -65,6 +66,7 @@ def search_results():
 			# return string
 
 	# run the query
+	# limit first 20 records, not first 20 distinct provider objects!
 	doctor_list = query.limit(20).all()
 	npi_list = [doctor.npi for doctor in doctor_list]
 	print "/n/n ************ the npi list: ", npi_list," \n\n"
@@ -74,7 +76,7 @@ def search_results():
 	# check to see if base average has already been calculated, if not:
 	# calculate the average based on all the claims from all the doctors.
 	if base_avg == None:
-		base_avg = calc_base_avg(doctor_list =doctor_list)
+		base_avg = calc_base_avg(doctor_list = doctor_list)
 
 	# calculate average claim proce for each doctor, maybe with treatment code
 	avg_claim_amts = [doctor.priciness(hcpcs_code) for doctor in doctor_list]

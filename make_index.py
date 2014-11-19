@@ -29,7 +29,7 @@ def make_dict():
 		# print words
 
 		for word in words:
-			word = word.decode("latin-1")
+			#word = word.decode("latin-1")
 			word = word.lower()
 
 			word = ''.join([c for c in word if c not in PUNCTUATION])
