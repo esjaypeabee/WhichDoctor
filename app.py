@@ -3,7 +3,7 @@ from sqlalchemy import func, distinct
 import model
 import search
 import numpy
-import lookuptable
+# import lookuptable
 
 #### IT'S HCPCS
 
@@ -58,15 +58,16 @@ def search_results():
 		# if user entered a procedure name
 		if procedure != '':
 			procedure = ''.join([c for c in procedure if c not in PUNCTUATION])
-			procedure_codes = lookuptable.procedure_dict[procedure]
-			query = query.join(model.Claim).filter(model.Claim.hcpcs_code.in_(procedure_codes))
+			# procedure_codes = lookuptable.procedure_dict[procedure]
+			procedures = session.query(model.Claim).join(model.ClaimLookup, model.Claim.hcpcs_code==model.ClaimLookup.hcpcs_code).join(model.ProcSearchTerm).filter(model.ProcSearchTerm.word == 'xray').all()
+			codes = [procedure.hcpcs_code for procedure in procedures]
+			query = query.join(model.Claim).filter(model.Claim.hcpcs_code.in_(codes))
 			
 			###### TESTING CODE #######
 			# string = ' '.join(str(procedure_codes))
 			# return string
 
 	# run the query
-	# limit first 20 records, not first 20 distinct provider objects!
 	doctor_list = query.limit(20).all()
 	npi_list = [doctor.npi for doctor in doctor_list]
 	print "/n/n ************ the npi list: ", npi_list," \n\n"
@@ -132,14 +133,6 @@ def calc_base_avg(hcpcs_code=None, doctor_list=None, specialties=None):
 
 	claim_prices = [claim.avg_submitted_chrg for claim in claims]
 	return sum(claim_prices)/len(claim_prices)
-
-	# KEEPING THIS FOR NOW BUT IS USELESS UNTIL TREATMENT SEARCH WORKS
-	# finds all claims with a given treatment code
-	# if expand beyond SF, change this to optionally limit by geographic area
-	# if hcpcs_code:
-	# 	claims = session.query(model.Claim).filter_by(hcpcs_code = hcpcs_code).all()	
-
-
 
 @app.route('/provider')
 def display_provider():
