@@ -70,7 +70,7 @@ def search_results():
 	# run the query
 	doctor_list = query.limit(20).all()
 	npi_list = [doctor.npi for doctor in doctor_list]
-	print "/n/n ************ the npi list: ", npi_list," \n\n"
+	# print "/n/n ************ the npi list: ", npi_list," \n\n"
 	if doctor_list == []:
 		return "No providers match your search! Try searching without a zip code."
 
