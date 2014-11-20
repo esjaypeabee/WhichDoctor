@@ -53,15 +53,15 @@ class Provider(Base):
 
 
 class Claim(Base):
-	"""Each row is a type of claim submitted in the calendar year 2012"""
+	"""The claims each doctor submitted in 2012"""
+
 	__tablename__ = "claims"
 
 	id 					= Column(Integer, primary_key = True) 
 	npi 				= Column(Integer, ForeignKey('providers.npi'),
 							nullable = True)
 	svc_place 			= Column(String(5), nullable = True)
-	hcpcs_code 			= Column(String(16), nullable = True)
-	hcpcs_descr 		= Column(String(64), nullable = True)
+	hcpcs_code 			= Column(String(16), ForeignKey('procedures.hcpcs_code'))
 	# number of times this service was billed
 	line_svc_cnt 		= Column(Float, nullable = True)
 	# number of unique patients who received this service 
@@ -76,32 +76,45 @@ class Claim(Base):
 	sd_mc_payment 		= Column(Float, nullable = True)
 
 	provider = relationship("Provider", backref=backref("claims", order_by=id))
+	procedure = relationship("Procedure", backref=backref("claims", order_by=id))
 
-class Lookup(Base):
+class Procedure(Base):
+	"""The procedures doctors performed in 2012"""
 
-	__tablename__ = 'lookup'
+	__tablename__ = 'procedures'
 
-	id 			= Column(Integer, primary_key = True)
-	search_term = Column(String(64))
-	specialty   = Column(Text)
+	hcpcs_code 			= Column(String(16), primary_key = True)
+	hcpcs_descr 		= Column(String(64), nullable = True)
 
-class ProcSearchTerm(Base):
+# class Lookup(Base):
 
-	__tablename__ = 'psearchterms'
+# 	__tablename__ = 'lookup'
 
-	id 			= Column(Integer, primary_key = True)
-	word 		= Column(String(64))
-	frequency 	= Column(Integer, nullable = True)
+# 	id 			= Column(Integer, primary_key = True)
+# 	search_term = Column(String(64))
+# 	specialty   = Column(Text)
 
-class ClaimLookup(Base):
 
-	__tablename__ = 'claimlookup'
 
-	id 			= Column(Integer, primary_key = True)
-	word_id 	= Column(Integer, ForeignKey('psearchterms.id'))
-	hcpcs_code 	= Column(String(16), nullable = True)
+
+
+# class ProcSearchTerm(Base):
+
+# 	__tablename__ = 'psearchterms'
+
+# 	id 			= Column(Integer, primary_key = True)
+# 	word 		= Column(String(64))
+# 	frequency 	= Column(Integer, nullable = True)
+
+# class ClaimLookup(Base):
+
+# 	__tablename__ = 'claimlookup'
+
+# 	id 			= Column(Integer, primary_key = True)
+# 	word_id 	= Column(Integer, ForeignKey('psearchterms.id'))
+# 	hcpcs_code 	= Column(String(16), nullable = True)
 	
-	searchterm = relationship("ProcSearchTerm", backref=backref("codes", order_by=id))
+# 	searchterm = relationship("ProcSearchTerm", backref=backref("codes", order_by=id))
 
 def connect():
     global ENGINE
