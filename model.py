@@ -1,5 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, or_, distinct
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy import create_engine, or_, distinct, func, select, cast 
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, Text, Boolean
 from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session
 
@@ -84,14 +86,16 @@ class Procedure(Base):
 	__tablename__ = 'procedures'
 
 	hcpcs_code 			= Column(String(16), primary_key = True)
-	hcpcs_descr 		= Column(String(64), nullable = True, index = True)
+	hcpcs_descr 		= Column(String(64), nullable = True)
+	hcpcs_tsv			= Column(TSVECTOR, index = True)
 
 class SpecialtyLookup(Base):
 
 	__tablename__ = 'lookup'
 
 	id 			= Column(Integer, primary_key = True)
-	search_term = Column(String(64), index = True)
+	search_term = Column(String(64))
+	search_tsv 	= Column(TSVECTOR, index = True)
 	specialty   = Column(Text)
 
 

@@ -1,6 +1,10 @@
 import model
 import csv
-import lookuptable
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy import create_engine, or_, distinct, func 
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, Text, Boolean
 
 
 SF_ZIPS = [94102, 94103, 94104, 94105, 
@@ -112,8 +116,9 @@ def load_procedures(session, filename):
 				#print "this claim is in SF!"
 				if short_zip in SF_ZIPS:
 					procedure = model.Procedure()
-					procedure.hcpcs_code 		 = line[16].strip()
-					procedure.hcpcs_descr 		 = line[17].strip()
+					procedure.hcpcs_code 	= line[16].strip()
+					procedure.hcpcs_descr 	= line[17].strip()
+					procedure.hcpcs_tsv		= func.to_tsvector(procedure.hcpcs_descr)	
 					if procedure_dict.get(procedure.hcpcs_code) == None:
 						procedure_dict[procedure.hcpcs_code] = 0
 						session.add(procedure)
@@ -129,6 +134,7 @@ def load_specialty_lookup(session, filename):
 		for line in lines:
 			lookup = model.SpecialtyLookup()
 			lookup.search_term = line[0].strip()
+			lookup.search_tsv = func.to_tsvector(lookup.search_term)	
 			lookup.specialty = line[1].strip()
 			session.add(lookup)
 
@@ -136,7 +142,7 @@ def load_specialty_lookup(session, filename):
 
 def main(session):
     # when running for real, remove echo = true
-    load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    # load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
     load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
     load_claims(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
     load_specialty_lookup(session, "Data/specialtylookup.csv")

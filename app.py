@@ -21,8 +21,7 @@ def search_results():
 	"""Displays a list of doctors matching a speciality in a zipcode (eventually)"""
 	# change this later to be specialty. Get speciality as a dropdown menu??
 	zipcode = request.args.get("zipcode")
-	search_terms = request.args.get("specialty")
-	procedure = request.args.get("procedure")
+	search_terms = request.args.get("search-terms")
 
 	session = model.connect()
 
@@ -32,7 +31,7 @@ def search_results():
 	hcpcs_code = None
 
 	# check if user entered anything
-	if zipcode == '' and search_terms== '' and procedure == '':
+	if zipcode == '' and search_terms== '':
 		return "Please enter a value"
 
 	else:
