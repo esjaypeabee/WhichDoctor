@@ -84,15 +84,15 @@ class Procedure(Base):
 	__tablename__ = 'procedures'
 
 	hcpcs_code 			= Column(String(16), primary_key = True)
-	hcpcs_descr 		= Column(String(64), nullable = True)
+	hcpcs_descr 		= Column(String(64), nullable = True, index = True)
 
-# class Lookup(Base):
+class SpecialtyLookup(Base):
 
-# 	__tablename__ = 'lookup'
+	__tablename__ = 'lookup'
 
-# 	id 			= Column(Integer, primary_key = True)
-# 	search_term = Column(String(64))
-# 	specialty   = Column(Text)
+	id 			= Column(Integer, primary_key = True)
+	search_term = Column(String(64), index = True)
+	specialty   = Column(Text)
 
 
 

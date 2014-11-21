@@ -121,12 +121,25 @@ def load_procedures(session, filename):
 
 		session.commit()
 
+def load_specialty_lookup(session, filename):
+
+	with open(filename, 'rb') as csvfile:
+
+		lines = csv.reader(csvfile, delimiter = ',')
+		for line in lines:
+			lookup = model.SpecialtyLookup()
+			lookup.search_term = line[0].strip()
+			lookup.specialty = line[1].strip()
+			session.add(lookup)
+
+	session.commit()
+
 def main(session):
     # when running for real, remove echo = true
-    # load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
     load_claims(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    # load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    # load_specialty_lookup(session, "Data/specialtylookup.csv")
+    load_specialty_lookup(session, "Data/specialtylookup.csv")
     # load_procedure_terms(session, "procedure_index.csv")
     # seed_claim_lookup(session, "procedure_index.csv")
     # add_specialty_terms(session, 'specialty_list.txt')
@@ -137,18 +150,7 @@ if __name__ == "__main__":
     s= model.connect()
     main(s)
 
-# def load_specialty_lookup(session, filename):
 
-# 	with open(filename, 'rb') as csvfile:
-
-# 		lines = csv.reader(csvfile, delimiter = ',')
-# 		for line in lines:
-# 			lookup = model.Lookup()
-# 			lookup.search_term = line[0].strip()
-# 			lookup.specialty = line[1].strip()
-# 			session.add(lookup)
-
-# 	session.commit()
 
 # def add_specialty_terms(session, filename):
 # 	f = open(filename)
