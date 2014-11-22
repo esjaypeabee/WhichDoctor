@@ -8,10 +8,7 @@ toss_words = ['doctor', 'room', 'care']
 
 ENGINE = create_engine("postgresql+pg8000://postgres:1234@localhost/medicare_claims", echo=False)
 
-def specialty(term):
-	session = model.connect()	
-
-	# split up the search terms
+def split_terms(term):
 	term_list = term.split()
 	print term_list
 
@@ -26,15 +23,36 @@ def specialty(term):
 			query_terms = query_terms + word + " | "
 
 	query_terms = query_terms[:-2]
-	
-	# search for specialties in the lookup table
+
+	return query_terms
+
+
+def specialty(term):
 	conn = ENGINE.connect()
+
+	# split up the search terms
+	query_terms = split_terms(term)
+
+	# search for specialties in the lookup table
 	specialty_list = conn.execute(select([model.SpecialtyLookup.specialty])\
 		.where(model.SpecialtyLookup.search_tsv.match(query_terms,postgresql_reconfig='english'))).fetchall()
 	if specialty_list == []:
 		return None
 	else:
 		return [specialty[0] for specialty in specialty_list]
+
+def procedure(term):
+	conn = ENGINE.connect()
+
+	# split up the search terms
+	query_terms = split_terms(term)
+
+	code_list = conn.execute(select([model.Procedure.hcpcs_code])\
+		.where(model.Procedure.hcpcs_tsv.match(query_terms,postgresql_reconfig='english'))).fetchall()
+	if code_list == []:
+		return None
+	else:
+		return [code[0] for code in code_list]
 	
 
 def main():

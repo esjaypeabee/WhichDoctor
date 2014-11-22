@@ -38,29 +38,38 @@ def search_results():
 		# if user entered a specialty
 		if search_terms != '':
 			search_terms = ''.join([c for c in search_terms if c not in PUNCTUATION])
-			specialties = search.search_specialty(search_terms)
+			specialties = search.specialty(search_terms)
+			codes = search.procedure(search_terms)
 			if specialties:
 				query = query.filter(model.Provider.specialty.in_(specialties))
+				#### maybe rethink this!!!
 				base_avg = calc_base_avg(specialties = specialties)
-			else:
-				return "There are no doctors with that specialty."
-			# base_avg = calc_base_avg(hcpcs_code = hcpcs_code)
-			# query = query.join(model.Claim).filter(model.Claim.hcpcs_code == hcpcs_code)
-			# hcpcs_code = int(hcpcs_code)
-		else:
-			specialties = None
+				q1 = query.filter(model.Provider.specialty.in_(specialties))
+				if not codes:
+					query = q1
+
+			if codes:
+				npis = session.query(model.Claim.npi).filter(model.Claim.hcpcs_code == 99233).all()
+	 			q2 = query.filter(model.Provider.npi.in_([npi[0] for npi in npis]))
+	 			if not specialties:
+	 				query = q2
+	 			else:
+	 				query = q1.union(q2)
 
 		# if user entered a zipcode 
 		if zipcode != '':
 			query = query.filter(model.Provider.short_zip == int(zipcode[:5]))
 
 		# if user entered a procedure name
-		if procedure != '':
-			procedure = ''.join([c for c in procedure if c not in PUNCTUATION])
-			# procedure_codes = lookuptable.procedure_dict[procedure]
-			procedures = session.query(model.Claim).join(model.ClaimLookup, model.Claim.hcpcs_code==model.ClaimLookup.hcpcs_code).join(model.ProcSearchTerm).filter(model.ProcSearchTerm.word == 'xray').all()
-			codes = [procedure.hcpcs_code for procedure in procedures]
-			query = query.join(model.Claim).filter(model.Claim.hcpcs_code.in_(codes))
+		# OLD STUFF
+		# if procedure != '':
+		# 	procedure = ''.join([c for c in procedure if c not in PUNCTUATION])
+		# 	# procedure_codes = lookuptable.procedure_dict[procedure]
+		# 	procedures = session.query(model.Claim).\
+		# 	join(model.ClaimLookup, model.Claim.hcpcs_code==model.ClaimLookup.hcpcs_code).\
+		# 	join(model.ProcSearchTerm).filter(model.ProcSearchTerm.word == procedure).all()
+		# 	codes = [procedure.hcpcs_code for procedure in procedures]
+		# 	query = query.join(model.Claim).filter(model.Claim.hcpcs_code.in_(codes))
 			
 			###### TESTING CODE #######
 			# string = ' '.join(str(procedure_codes))
