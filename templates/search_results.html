@@ -32,11 +32,46 @@
 
       function drawMap(){
 
-        console.log("drawMap got called!")
+        //alert("drawMap is called");
+        console.log("drawMap got called!");
 
-        L.mapbox.accessToken = 'TOKEN';
+        L.mapbox.accessToken = '';
 
-        var map = L.mapbox.map('map-panel', 'sarajulia.k9kblj6l').setView([37.769, -122.459], 13);
+        var map = L.mapbox.map('map-panel', 'sarajulia.k9kblj6l',
+            {scrollWheelZoom: false});
+
+        map.setView([37.769, -122.459], 13);
+
+        addPin(map);
+      }
+
+      function addPin(map){
+        console.log("addPin is called");
+
+        L.mapbox.featureLayer({
+          // this feature is in the GeoJSON format: see geojson.org
+          // for the full specification
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            // coordinates here are in longitude, latitude order because
+            // x, y is the standard for GeoJSON and many formats
+            coordinates: [
+              -122.4114852,
+              37.788812 
+            ]
+          },
+          properties: {
+            title: 'Hackbright',
+            description: '683 Sutter Ave, San Francisco, CA',
+            // one can customize markers by adding simplestyle properties
+            // https://www.mapbox.com/foundations/an-open-platform/#simplestyle
+            'marker-size': 'small',
+            'marker-color': '#FE2E2E',
+            // 'marker-symbol': 'marker solid'
+          }
+        }).addTo(map);
+
       }
 
       $.tablesorter.addParser({ 
@@ -58,6 +93,8 @@
 
       $(document).ready(function() 
         { 
+          alert("document is ready");
+
           drawMap();
 
           $("#drtable").tablesorter({

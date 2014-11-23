@@ -1,11 +1,13 @@
 import model
+import os
 import csv
+import time
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy import create_engine, or_, distinct, func 
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, Text, Boolean
-
+from pygeocoder import Geocoder
 
 SF_ZIPS = [94102, 94103, 94104, 94105, 
 			94107, 94108, 94109, 94110, 
@@ -15,6 +17,7 @@ SF_ZIPS = [94102, 94103, 94104, 94105,
 			94129, 94130, 94131, 94132, 
 			94133, 94134, 94158]
 
+G_KEY = os.environ.get('G_KEY')
 
 
 def load_providers(session, filename):
@@ -30,30 +33,42 @@ def load_providers(session, filename):
 		lines = csv.reader(csvfile, delimiter = '\t')
 
 		for line in lines:
-			# print "building a provider"
-			provider = model.Provider()
-			provider.npi 			  = line[0].strip()
-			provider.surname 		  = line[1].strip() 
-			provider.givenname 		  = line[2].strip() 
-			provider.mi 			  = line[3].strip()
-			provider.credential 	  = line[4].strip()
-			provider.gender 		  = line[5].strip()
-			provider.entity_type 	  = line[6].strip() 
-			provider.addy1 			  = line[7].strip() 
-			provider.addy2 			  = line[8].strip() 
-			provider.city 			  = line[9].strip() 
-			provider.zipcode 		  = line[10].strip()
-			provider.short_zip		  = provider.zipcode[:5]
-			provider.state 			  = line[11].strip() 
-			provider.country		  = line[12].strip()  
-			provider.specialty 		  = line[13].strip() 
-			provider.mc_participation = line[14].strip()
-			if provider_dict.get(provider.npi) == None:
-				# print "check if in provider_dict"
-				provider_dict[provider.npi] = 0
-				if provider.country == 'US' and (int(provider.short_zip) in SF_ZIPS):
+			# Check if provider is in SF
+			if line[12] == 'US' and int(line[10].strip()[:5]) in SF_ZIPS:
+				# check if provider is already in dictionary
+				if provider_dict.get(line[0].strip()) == None:
+					# if not, add to dictionary and add provider to session
+					provider_dict[line[0].strip()] = 0
+					provider = model.Provider()
+					provider.npi 			  = line[0].strip()
+					provider.surname 		  = line[1].strip() 
+					provider.givenname 		  = line[2].strip() 
+					provider.mi 			  = line[3].strip()
+					provider.credential 	  = line[4].strip()
+					provider.gender 		  = line[5].strip()
+					provider.entity_type 	  = line[6].strip() 
+					provider.addy1 			  = line[7].strip() 
+					provider.addy2 			  = line[8].strip() 
+					provider.city 			  = line[9].strip() 
+					provider.zipcode 		  = line[10].strip()
+					provider.short_zip		  = provider.zipcode[:5]
+					provider.state 			  = line[11].strip() 
+					provider.country		  = line[12].strip()  
+					provider.specialty 		  = line[13].strip() 
+					provider.mc_participation = line[14].strip()
+
+					full_address = provider.addy1 +' '+ provider.city +' '+ provider.state
+					print full_address
+					# feed the full address into the geocoder to get lat long
+					geocode = Geocoder(G_KEY).geocode(full_address)
+					provider.lat = geocode[0].coordinates[0]
+					provider.lng = geocode[0].coordinates[1]
+
 					session.add(provider)
 					print "Adding to session: ", provider.npi, provider.givenname, provider.surname
+					# delay the next call so that the google api doesn't kick 
+					# the request out.
+					time.sleep(1)
 					# print "adding provider to session"
 		session.commit()
 
@@ -142,10 +157,10 @@ def load_specialty_lookup(session, filename):
 
 def main(session):
     # when running for real, remove echo = true
-    # load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    #load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
     load_claims(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    load_specialty_lookup(session, "Data/specialtylookup.csv")
+    # load_specialty_lookup(session, "Data/specialtylookup.csv")
     # load_procedure_terms(session, "procedure_index.csv")
     # seed_claim_lookup(session, "procedure_index.csv")
     # add_specialty_terms(session, 'specialty_list.txt')

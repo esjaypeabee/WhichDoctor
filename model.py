@@ -32,7 +32,9 @@ class Provider(Base):
 	state 				= Column(String(5), nullable = True) 
 	country 			= Column(String(5), nullable = True)  
 	specialty 			= Column(String(64), nullable = True) 
-	mc_participation 	= Column(String(5), nullable = True) 
+	mc_participation 	= Column(String(5), nullable = True)
+	lat 				= Column(Float)
+	lng 				= Column(Float) 
 
 	def priciness(self, code=None):
 		"""If a particular treatment is specified, takes the average
