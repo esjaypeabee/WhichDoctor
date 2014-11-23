@@ -60,21 +60,6 @@ def search_results():
 		if zipcode != '':
 			query = query.filter(model.Provider.short_zip == int(zipcode[:5]))
 
-		# if user entered a procedure name
-		# OLD STUFF
-		# if procedure != '':
-		# 	procedure = ''.join([c for c in procedure if c not in PUNCTUATION])
-		# 	# procedure_codes = lookuptable.procedure_dict[procedure]
-		# 	procedures = session.query(model.Claim).\
-		# 	join(model.ClaimLookup, model.Claim.hcpcs_code==model.ClaimLookup.hcpcs_code).\
-		# 	join(model.ProcSearchTerm).filter(model.ProcSearchTerm.word == procedure).all()
-		# 	codes = [procedure.hcpcs_code for procedure in procedures]
-		# 	query = query.join(model.Claim).filter(model.Claim.hcpcs_code.in_(codes))
-			
-			###### TESTING CODE #######
-			# string = ' '.join(str(procedure_codes))
-			# return string
-
 	# run the query
 	doctor_list = query.limit(20).all()
 	npi_list = [doctor.npi for doctor in doctor_list]

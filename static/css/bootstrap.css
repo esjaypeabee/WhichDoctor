@@ -2087,7 +2087,7 @@ th {
 .table > thead > tr > th {
   vertical-align: bottom;
   border-bottom: 2px solid #ddd;
-  font-size: 125%
+  font-size: 90%
 }
 .table > thead > tr > th > span {
   font-size: 65%
