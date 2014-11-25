@@ -40,37 +40,56 @@
         var map = L.mapbox.map('map-panel', 'sarajulia.k9kblj6l',
             {scrollWheelZoom: false});
 
-        map.setView([37.769, -122.459], 13);
+        geojson = make_geojson();
+
+        var pins_layer = L.mapbox.featureLayer(geojson).addTo(map);
+
+        map.fitBounds(pins_layer.getBounds());
 
         return map;
       }
 
-      function addPin(map, lat, lng, name, address, color){
-        console.log("addPin is called for: ", name, address, lng, lat, color);
+      function make_geojson(){
+        console.log("make_geojson got called!");
 
-        L.mapbox.featureLayer({
-          // this feature is in the GeoJSON format: see geojson.org
-          // for the full specification
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            // coordinates here are in longitude, latitude order because
-            // x, y is the standard for GeoJSON and many formats
-            coordinates: [
-              lng,
-              lat 
-            ]
-          },
-          properties: {
-            title: name,
-            description: address,
-            // one can customize markers by adding simplestyle properties
-            // https://www.mapbox.com/foundations/an-open-platform/#simplestyle
-            'marker-size': 'small',
-            'marker-color': color,
-            'marker-allow-overlap': false,
-          }
-        }).addTo(map);
+        geojson = [];
+
+        {% for doctor in doctor_list: %}
+
+          {% if doctor.dollars == "$" or doctor.dollars == "$$" %}
+
+            var color = "#04B431";
+            {% elif doctor.dollars == '$$$' %}
+            var color = "#FFFF00";
+            {% elif doctor.dollars == '$$$$' or doctor.dollars == '$$$$$' %}
+            var color = "#DF0101";
+
+          {% endif %}
+
+          geojson.push({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              // coordinates here are in longitude, latitude order
+              coordinates: [
+                {{ doctor.lng }},
+                {{ doctor.lat }} 
+              ]
+              },
+            properties: {
+              title: "{{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}",
+              description: "{{ doctor.addy1 }} {% if doctor.addy2 %} {{ doctor.addy2 }} {% endif %} {{ doctor.city }}, {{ doctor.state }} {{ doctor.short_zip }}",
+              // https://www.mapbox.com/foundations/an-open-platform/#simplestyle
+              'marker-size': 'small',
+              'marker-color': color,
+              'marker-allow-overlap': false,
+              }
+            });
+
+        {% endfor %}
+
+        //console.log(geojson);
+        return geojson;
 
       }
 
@@ -96,24 +115,6 @@
           // alert("document is ready");
 
           var map = drawMap();
-
-          {% for doctor in doctor_list: %}
-
-              var name = "{{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}";
-              var address = "{{ doctor.addy1 }} {% if doctor.addy2 %} {{ doctor.addy2 }} {% endif %} {{ doctor.city }}, {{ doctor.state }} {{ doctor.short_zip }}";
-              var lat = {{ doctor.lat }};
-              var lng = {{ doctor.lng }};
-              {% if doctor.dollars == "$" or doctor.dollars == "$$" %}
-              var color = "#04B431";
-              {% elif doctor.dollars == '$$$' %}
-              var color = "#FFFF00";
-              {% elif doctor.dollars == '$$$$' or doctor.dollars == '$$$$$' %}
-              var color = "#DF0101";
-              {% endif %}
-
-              addPin(map, lat, lng, name, address, color);
-
-          {% endfor %}
 
           $("#drtable").tablesorter({
 
