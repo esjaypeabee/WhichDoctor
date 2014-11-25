@@ -14,13 +14,17 @@
            </thead>
            <tbody>
 
+              {% set counter = 0 -%}
+
               {% for doctor in doctor_list %}
 
-                <tr>
+                <tr class="drsrow" id="{{counter}}">
                     <td> <a href="/provider?id={{ doctor.npi }}"> {{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}</a> </td>
                     <td> {{ doctor.specialty }} </td>
                     <td class="dollaz {{doctor.numdollars}}"> {{ doctor.dollars }} </td>
                 </tr>
+
+                {% set counter = counter + 1 -%}
               
               {% endfor %}
               
@@ -30,27 +34,25 @@
   </div>
     <script>
 
+      //var events = new MicroEvent();
+
       function drawMap(){
 
         //alert("drawMap is called");
         console.log("drawMap got called!");
 
-        L.mapbox.accessToken = '';
+        L.mapbox.accessToken = 'pk.eyJ1Ijoic2FyYWp1bGlhIiwiYSI6Imw5YlJaYmsifQ.6MhrXBPE3xp8hu3Nqbk4iQ';
 
         var map = L.mapbox.map('map-panel', 'sarajulia.k9kblj6l',
             {scrollWheelZoom: false});
-
-        geojson = make_geojson();
-
-        var pins_layer = L.mapbox.featureLayer(geojson).addTo(map);
-
-        map.fitBounds(pins_layer.getBounds());
 
         return map;
       }
 
       function make_geojson(){
         console.log("make_geojson got called!");
+
+        var i = 0;
 
         geojson = [];
 
@@ -72,19 +74,21 @@
               type: 'Point',
               // coordinates here are in longitude, latitude order
               coordinates: [
-                {{ doctor.lng }},
-                {{ doctor.lat }} 
+                {{ doctor.lng }}, {{ doctor.lat }} 
               ]
-              },
+            },
             properties: {
               title: "{{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}",
               description: "{{ doctor.addy1 }} {% if doctor.addy2 %} {{ doctor.addy2 }} {% endif %} {{ doctor.city }}, {{ doctor.state }} {{ doctor.short_zip }}",
               // https://www.mapbox.com/foundations/an-open-platform/#simplestyle
               'marker-size': 'small',
               'marker-color': color,
+              'marker-line-color': '#2E2E2E',
               'marker-allow-overlap': false,
               }
             });
+
+            //console.log("Added {{doctor.surname}}")
 
         {% endfor %}
 
@@ -92,6 +96,7 @@
         return geojson;
 
       }
+
 
       $.tablesorter.addParser({ 
         // set a unique id 
@@ -101,20 +106,24 @@
           return false; 
         }, 
         format: function(s) { 
-          // format your data for normalization 
+          // format data for normalization 
           return s.replace('$$$$$',5).replace('$$$$',4).replace('$$$',3).replace('$$',2).replace('$',1); 
           }, 
           // set type, either numeric or text 
           type: 'numeric' 
         }); 
 
-
-
       $(document).ready(function() 
         { 
           // alert("document is ready");
 
           var map = drawMap();
+
+          geojson = make_geojson();
+
+          var pins_layer = L.mapbox.featureLayer(geojson).addTo(map);
+
+          map.fitBounds(pins_layer.getBounds());
 
           $("#drtable").tablesorter({
 
@@ -125,8 +134,23 @@
             } 
 
             }); 
-          } 
-        ); 
+
+          $(".drsrow")
+            .on('mouseover', function(){
+              var idx = parseInt($(this).attr('id'));
+              geojson[idx].properties["marker-size"] = "medium";
+              pins_layer.setGeoJSON(geojson);
+              pins_layer.addTo(map);
+            //events.trigger('listing-mouse-in', idx);
+            })
+            .on('mouseout', function(){
+              var idx = parseInt($(this).attr('id'));
+              geojson[idx].properties["marker-size"] = "small";
+              pins_layer.setGeoJSON(geojson);
+              pins_layer.addTo(map);
+              //events.trigger('listing-mouse-out', idx);
+            });
+          }); 
 
           // this section was for clustering the pins
           // var markers = new L.MarkerClusterGroup();
