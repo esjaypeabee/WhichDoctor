@@ -51,8 +51,7 @@ class Provider(Base):
 				charges.append(claim.avg_submitted_chrg)
 
 		self.avg = (sum(charges))/len(charges)
-		return (sum(charges))/len(charges)
-
+		return self.avg
 
 
 

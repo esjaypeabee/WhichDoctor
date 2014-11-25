@@ -42,11 +42,11 @@
 
         map.setView([37.769, -122.459], 13);
 
-        addPin(map);
+        return map;
       }
 
-      function addPin(map){
-        console.log("addPin is called");
+      function addPin(map, lat, lng, name, address, color){
+        console.log("addPin is called for: ", name, address, lng, lat, color);
 
         L.mapbox.featureLayer({
           // this feature is in the GeoJSON format: see geojson.org
@@ -57,18 +57,18 @@
             // coordinates here are in longitude, latitude order because
             // x, y is the standard for GeoJSON and many formats
             coordinates: [
-              -122.4114852,
-              37.788812 
+              lng,
+              lat 
             ]
           },
           properties: {
-            title: 'Hackbright',
-            description: '683 Sutter Ave, San Francisco, CA',
+            title: name,
+            description: address,
             // one can customize markers by adding simplestyle properties
             // https://www.mapbox.com/foundations/an-open-platform/#simplestyle
             'marker-size': 'small',
-            'marker-color': '#FE2E2E',
-            // 'marker-symbol': 'marker solid'
+            'marker-color': color,
+            'marker-allow-overlap': false,
           }
         }).addTo(map);
 
@@ -93,9 +93,27 @@
 
       $(document).ready(function() 
         { 
-          alert("document is ready");
+          // alert("document is ready");
 
-          drawMap();
+          var map = drawMap();
+
+          {% for doctor in doctor_list: %}
+
+              var name = "{{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}";
+              var address = "{{ doctor.addy1 }} {% if doctor.addy2 %} {{ doctor.addy2 }} {% endif %} {{ doctor.city }}, {{ doctor.state }} {{ doctor.short_zip }}";
+              var lat = {{ doctor.lat }};
+              var lng = {{ doctor.lng }};
+              {% if doctor.dollars == "$" or doctor.dollars == "$$" %}
+              var color = "#04B431";
+              {% elif doctor.dollars == '$$$' %}
+              var color = "#FFFF00";
+              {% elif doctor.dollars == '$$$$' or doctor.dollars == '$$$$$' %}
+              var color = "#DF0101";
+              {% endif %}
+
+              addPin(map, lat, lng, name, address, color);
+
+          {% endfor %}
 
           $("#drtable").tablesorter({
 
@@ -108,6 +126,35 @@
             }); 
           } 
         ); 
+
+          // this section was for clustering the pins
+          // var markers = new L.MarkerClusterGroup();
+
+          // {% for doctor in doctor_list: %}
+          //     var title = "{{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}";
+          //     var address = "{{ doctor.addy1 }} {% if doctor.addy2 %} {{ doctor.addy2 }} {% endif %} {{ doctor.city }}, {{ doctor.state }} {{ doctor.short_zip }}";
+
+          //     {% if doctor.dollars == "$" or doctor.dollars == "$$" %}
+          //     var color = "#04B431";
+          //     {% elif doctor.dollars == '$$$' %}
+          //     var color = "#FFFF00";
+          //     {% elif doctor.dollars == '$$$$' or doctor.dollars == '$$$$$' %}
+          //     var color = "#DF0101";
+          //     {% endif %}
+
+          //     var marker = L.marker(new L.LatLng({{ doctor.lat }}, {{ doctor.lng }}), {
+          //         icon: L.mapbox.marker.icon({'marker-size': 'small',
+          //                                     'marker-color': color,
+          //                                     'marker-allow-overlap': false,}),
+          //         title: title,
+          //         description: address
+          //     });
+          //     marker.bindPopup(title);
+          //     markers.addLayer(marker);
+          // {% endfor %}
+
+          // map.addLayer(markers);
+
       
 
     </script>
