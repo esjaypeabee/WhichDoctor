@@ -38,32 +38,36 @@ def search_results():
 		# if user entered a specialty
 		if search_terms != '':
 			# change this to replace punctuation with spaces
-			search_terms = ''.join([c for c in search_terms if c not in PUNCTUATION])
-			print "/n/n ************ search terms: ", search_terms," \n\n"			
-			specialties = search.specialty(search_terms)
-			print "/n/n ************ specialties: ", specialties," \n\n"
-			codes = search.procedure(search_terms)
-			print "/n/n ************ codes: ", codes," \n\n"
-			if specialties:
-				query = query.filter(model.Provider.specialty.in_(specialties))
-				#### maybe rethink this!!!
-				# base_avg = calc_base_avg(specialties = specialties)
-				q1 = query.filter(model.Provider.specialty.in_(specialties))
-				if not codes:
-					query = q1
+			# search_terms = ''.join([c for c in search_terms if c not in PUNCTUATION])	
 
-			if codes:
-				print "/n/n ***************found some codes \n\n"
-				npis = session.query(model.Claim.npi).filter(model.Claim.hcpcs_code.in_(codes)).all()
-				print "/n/n ************ npis:", npis, " \n\n"
-	 			q2 = query.filter(model.Provider.npi.in_([npi[0] for npi in npis]))
-	 			if not specialties:
-	 				print "/n/n ************ q2, \n\n"
-	 				query = q2
-	 			else:
-	 				print "/n/n ************ union!, \n\n"
-	 				query = q1.union(q2)
-	 			print "/n/n ************ query: ", query," \n\n"
+			specialties = search.specialty(search_terms)
+			print "\n\n ************ found these specialties:  ", specialties,"\n\n"
+			codes = search.procedure(search_terms)
+			print "\n\n ************ found these specialties: ",codes," \n\n"
+
+			if codes == None and specialties == None:
+				return "No providers match your search! Try a different term."
+
+			else:
+
+				if specialties:
+					query = query.filter(model.Provider.specialty.in_(specialties))
+					#### maybe rethink this!!!
+					# base_avg = calc_base_avg(specialties = specialties)
+					q1 = query.filter(model.Provider.specialty.in_(specialties))
+					if not codes:
+						print "\n\n ************ I'm using q1 \n\n"
+						query = q1
+
+				if codes:
+					npis = session.query(model.Claim.npi).filter(model.Claim.hcpcs_code.in_(codes)).all()
+		 			q2 = query.filter(model.Provider.npi.in_([npi[0] for npi in npis]))
+		 			if not specialties:
+		 				print "\n\n ************ I'm using q2 \n\n"
+		 				query = q2
+		 			else:
+		 				print "\n\n ************ I'm using the union \n\n"
+		 				query = q1.union(q2)
 
 
 		# if user entered a zipcode 
@@ -83,6 +87,7 @@ def search_results():
 	# 	base_avg = calc_base_avg(doctor_list = doctor_list)
 
 	# calculate average claim proce for each doctor, maybe with treatment code
+	print "\n\n ************ calculating avg_claim_amts \n\n"
 	avg_claim_amts = [doctor.priciness(hcpcs_code) for doctor in doctor_list]
 
 	# put that into a numpy array, then calculate standard dev and zscore
