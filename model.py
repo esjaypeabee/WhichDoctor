@@ -35,20 +35,15 @@ class Provider(Base):
 	mc_participation 	= Column(String(5), nullable = True)
 	lat 				= Column(Float)
 	lng 				= Column(Float) 
+	zscore				= Column(Float)
 
-	def priciness(self, code=None):
+	def find_avg(self):
 		"""If a particular treatment is specified, takes the average
 		submitted charge of this doctor for that treatment. If no treatment, 
 		calculates the average of all of this doctor's claims."""
-		charges = []
 		# this hits the database a lot - is there a better way?
 		# generate table that shows how pricey a docter is per procedure
-		for claim in self.claims:
-			if code:
-				if claim.hcpcs_code == code:
-					charges.append(claim.avg_submitted_chrg)
-			else: 
-				charges.append(claim.avg_submitted_chrg)
+		charges = [float(claim.avg_submitted_chrg) for claim in self.claims]
 
 		self.avg = (sum(charges))/len(charges)
 		return self.avg
@@ -98,6 +93,8 @@ class SpecialtyLookup(Base):
 	search_term = Column(String(64))
 	search_tsv 	= Column(TSVECTOR, index = True)
 	specialty   = Column(Text)
+	avg_claim 	= Column(Float)
+	stdev		= Column(Float)
 
 
 

@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy import create_engine, or_, distinct, func 
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, Text, Boolean
 from pygeocoder import Geocoder
+import spec_dict
 
 SF_ZIPS = [94102, 94103, 94104, 94105, 
 			94107, 94108, 94109, 94110, 
@@ -58,11 +59,19 @@ def load_providers(session, filename):
 					provider.mc_participation = line[14].strip()
 
 					full_address = provider.addy1 +' '+ provider.city +' '+ provider.state
-					print full_address
+					# print full_address
 					# feed the full address into the geocoder to get lat long
 					geocode = Geocoder(G_KEY).geocode(full_address)
 					provider.lat = geocode[0].coordinates[0]
 					provider.lng = geocode[0].coordinates[1]
+
+					# claims = session.query(model.Claim).filter(model.Claim.npi == provider.npi).all()
+					# charges = [float(claim.avg_submitted_chrg) for claim in claims]
+					# avg = sum(charges)/len(charges)
+					# mean = spec_dict.thedict[lookup.specialty][0]
+					# stdev= spec_dict.thedict[lookup.specialty][1]
+					
+					# provider.zscore = (avg - mean)/stdev
 
 					session.add(provider)
 					print "Adding to session: ", provider.npi, provider.givenname, provider.surname
@@ -151,14 +160,18 @@ def load_specialty_lookup(session, filename):
 			lookup.search_term = line[0].strip()
 			lookup.search_tsv = func.to_tsvector(lookup.search_term)	
 			lookup.specialty = line[1].strip()
+			lookup.avg_claim = spec_dict.thedict[lookup.specialty][0]
+			lookup.stdev = spec_dict.thedict[lookup.specialty][1]
 			session.add(lookup)
+
 
 	session.commit()
 
 def main(session):
     # when running for real, remove echo = true
+  
     load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    #load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    # load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
     load_claims(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
     # load_specialty_lookup(session, "Data/specialtylookup.csv")
     # load_procedure_terms(session, "procedure_index.csv")

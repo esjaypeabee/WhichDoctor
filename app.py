@@ -43,7 +43,7 @@ def search_results():
 			specialties = search.specialty(search_terms)
 			print "\n\n ************ found these specialties:  ", specialties,"\n\n"
 			codes = search.procedure(search_terms)
-			print "\n\n ************ found these specialties: ",codes," \n\n"
+			print "\n\n ************ found these codes: ",codes," \n\n"
 
 			if codes == None and specialties == None:
 				return "No providers match your search! Try a different term."
@@ -81,14 +81,9 @@ def search_results():
 	if doctor_list == []:
 		return "No providers match your search! Try searching without a zip code."
 
-	# check to see if base average has already been calculated, if not:
-	# calculate the average based on all the claims from all the doctors.
-	# if base_avg == None:
-	# 	base_avg = calc_base_avg(doctor_list = doctor_list)
-
 	# calculate average claim proce for each doctor, maybe with treatment code
 	print "\n\n ************ calculating avg_claim_amts \n\n"
-	avg_claim_amts = [doctor.priciness(hcpcs_code) for doctor in doctor_list]
+	avg_claim_sub = [doctor.priciness(hcpcs_code) for doctor in doctor_list]
 
 	# put that into a numpy array, then calculate standard dev and zscore
 	avg_claim_array = numpy.array(avg_claim_amts)
