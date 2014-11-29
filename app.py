@@ -27,9 +27,6 @@ def search_results():
 
 	query = session.query(model.Provider).distinct()
 
-	base_avg = None
-	hcpcs_code = None
-
 	# check if user entered anything
 	if zipcode == '' and search_terms== '':
 		return "Please enter a value"
@@ -37,9 +34,7 @@ def search_results():
 	else:
 		# if user entered a specialty
 		if search_terms != '':
-			# change this to replace punctuation with spaces
-			# search_terms = ''.join([c for c in search_terms if c not in PUNCTUATION])	
-
+			
 			specialties = search.specialty(search_terms)
 			print "\n\n ************ found these specialties:  ", specialties,"\n\n"
 			codes = search.procedure(search_terms)
@@ -52,8 +47,7 @@ def search_results():
 
 				if specialties:
 					query = query.filter(model.Provider.specialty.in_(specialties))
-					#### maybe rethink this!!!
-					# base_avg = calc_base_avg(specialties = specialties)
+					
 					q1 = query.filter(model.Provider.specialty.in_(specialties))
 					if not codes:
 						print "\n\n ************ I'm using q1 \n\n"
@@ -76,38 +70,21 @@ def search_results():
 
 	# run the query
 	doctor_list = query.limit(20).all()
-	npi_list = [doctor.npi for doctor in doctor_list]
-	# print "/n/n ************ the npi list: ", npi_list," \n\n"
+
 	if doctor_list == []:
 		return "No providers match your search! Try searching without a zip code."
 
-	# calculate average claim proce for each doctor, maybe with treatment code
-	print "\n\n ************ calculating avg_claim_amts \n\n"
-	avg_claim_sub = [doctor.priciness(hcpcs_code) for doctor in doctor_list]
-
-	# put that into a numpy array, then calculate standard dev and zscore
-	avg_claim_array = numpy.array(avg_claim_amts)
-	stdev = numpy.std(avg_claim_array)
-	mean = numpy.mean(avg_claim_array)
 	for dr in doctor_list:
-		zscore = (dr.avg - mean)/stdev
-		if zscore <= -2:
+		if dr.zscore <= -2:
 			dr.dollars = "$"
-		elif zscore <= -1:
+		elif dr.zscore <= -1:
 			dr.dollars = "$$"
-		elif zscore < 1:
+		elif dr.zscore < 1:
 			dr.dollars = "$$$"
-		elif zscore < 2:
+		elif dr.zscore < 2:
 			dr.dollars = "$$$$"
 		else:
 			dr.dollars = "$$$$$"
-
-
-	# EARLIER VERSION
-	# calculate the average claim price for each doctor, optionally with code
-	# for doctor in doctor_list:
-	# 	dr_avg = doctor.priciness(hcpcs_code)
-	# 	doctor.rel_cost = ((dr_avg - base_avg)/base_avg)*100
 
 
 	return render_template('search_results.html', doctor_list = doctor_list)
