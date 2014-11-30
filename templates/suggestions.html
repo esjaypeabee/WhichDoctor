@@ -1,0 +1,21 @@
+<html>
+
+	Looks like something wasn't quite spelled correctly!
+	Did you mean any of these?
+	
+	<div class="container">
+		<div class="col-md-7" id="word-list">
+			<ul>
+			{% for suggestion in suggestions %}
+
+				<li><a href="#" onclick="$('#display-doctors').load('/search_results?zipcode=&search-terms={{suggestion}}');"> {{suggestion}} </a></li>
+
+			{% endfor %}
+			</ul>
+		</div>
+		<div class="col-md-3" id="none">
+			<a href="/">Or none of these...</a>
+		</div>
+	</div>
+
+</html>
