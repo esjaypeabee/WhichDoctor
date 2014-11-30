@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, request, session as websessi
 from sqlalchemy import func, distinct
 import model
 import search
-import numpy
+import spellchecker
 # import lookuptable
 
 #### IT'S HCPCS
@@ -41,7 +41,11 @@ def search_results():
 			print "\n\n ************ found these codes: ",codes," \n\n"
 
 			if codes == None and specialties == None:
-				return "No providers match your search! Try a different term."
+				suggestions = spellchecker.generate_suggestions(search_terms)
+				if suggestions == []:
+					return "No providers match your search! Try a different term."
+				else:
+					return render_template('suggestions.html',zipcode=zipcode, suggestions=suggestions)
 
 			else:
 
