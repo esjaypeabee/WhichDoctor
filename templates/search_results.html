@@ -2,8 +2,8 @@
 
    
   <div id="allresults" class="container">
-    <div id="map-panel" class="col-md-5" style="height: 400px;"><!-- style="height: 100px;" --></div> 
-    <div id="results-table" class="col-md-7">
+    <div div id="map-panel" class="col-md-5" style="height: 400px;"></div> 
+    <div id="results-table" class="col-md-7 pager tablesorter-pager">
       <table class="table table-striped tablesorter" id='drtable'>
            <thead>
               <tr>
@@ -28,8 +28,17 @@
               
               {% endfor %}
               
-             </tbody>
-      </table>
+            </tbody>
+        </table>
+<!--         <nav>
+            <ul class="pager">
+              <li><a href="#" class=".first">First</a></li>
+              <li><a href="#" class=".prev">Previous</a></li>
+              <li><a href="#" class=".next">Next</a></li>
+              <li><a href="#" class=".last">Last</a></li>
+            </ul>
+          </ul>
+        </nav> -->
     </div>
   </div>
     <script>
@@ -113,44 +122,61 @@
           type: 'numeric' 
         }); 
 
-      $(document).ready(function() 
-        { 
+      $(document).ready(function() { 
           // alert("document is ready");
 
-          var map = drawMap();
+        var map = drawMap();
 
-          geojson = make_geojson();
+        geojson = make_geojson();
 
-          var pins_layer = L.mapbox.featureLayer(geojson).addTo(map);
+        var pins_layer = L.mapbox.featureLayer(geojson).addTo(map);
 
-          map.fitBounds(pins_layer.getBounds());
+        map.fitBounds(pins_layer.getBounds());
 
-          $("#drtable").tablesorter({
+        $("#sticker").sticky({topSpacing:10});
 
-            headers: { 
-              2: { 
-               sorter:'numdollars' 
-              } 
-            } 
+        //THIS IS FOR CREATING A PAGINATED TABLE
+        // var pagerOptions = {
+        //   container: $(".pager"),
 
-            }); 
+        //   // apply disabled classname to the pager arrows when the rows at either extreme is visible - default is true
+        //   updateArrows: true,
 
-          $(".drsrow")
-            .on('mouseover', function(){
-              var idx = parseInt($(this).attr('id'));
-              geojson[idx].properties["marker-size"] = "medium";
-              pins_layer.setGeoJSON(geojson);
-              pins_layer.addTo(map);
-            //events.trigger('listing-mouse-in', idx);
-            })
-            .on('mouseout', function(){
-              var idx = parseInt($(this).attr('id'));
-              geojson[idx].properties["marker-size"] = "small";
-              pins_layer.setGeoJSON(geojson);
-              pins_layer.addTo(map);
-              //events.trigger('listing-mouse-out', idx);
-            });
-          }); 
+        //   // starting page of the pager (zero based index)
+        //   page: 0,
+
+        //   // Number of visible rows - default is 10
+        //   size: 20,
+
+        //   // css class names of pager arrows
+        //   cssNext: '.next', // next page arrow
+        //   cssPrev: '.prev', // previous page arrow
+        //   cssFirst: '.first', // go to first page arrow
+        //   cssLast: '.last', // go to last page arrow
+        //   cssGoto: '.gotoPage', // select dropdown to allow choosing a page
+        // };
+
+        $("#drtable").tablesorter({ headers: {2: {sorter:'numdollars'} } });
+
+        //.tablesorterPager(pagerOptions);
+     
+
+        $(".drsrow")
+          .on('mouseover', function(){
+            var idx = parseInt($(this).attr('id'));
+            geojson[idx].properties["marker-size"] = "medium";
+            pins_layer.setGeoJSON(geojson);
+            pins_layer.addTo(map);
+          //events.trigger('listing-mouse-in', idx);
+          })
+          .on('mouseout', function(){
+            var idx = parseInt($(this).attr('id'));
+            geojson[idx].properties["marker-size"] = "small";
+            pins_layer.setGeoJSON(geojson);
+            pins_layer.addTo(map);
+            //events.trigger('listing-mouse-out', idx);
+          });
+      }); 
 
           // this section was for clustering the pins
           // var markers = new L.MarkerClusterGroup();

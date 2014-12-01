@@ -50,8 +50,6 @@ def search_results():
 			else:
 
 				if specialties:
-					query = query.filter(model.Provider.specialty.in_(specialties))
-					
 					q1 = query.filter(model.Provider.specialty.in_(specialties))
 					if not codes:
 						print "\n\n ************ I'm using q1 \n\n"
@@ -79,13 +77,13 @@ def search_results():
 		return "No providers match your search! Try searching without a zip code."
 
 	for dr in doctor_list:
-		if dr.zscore <= -2:
+		if dr.zscore <= -1.5:
 			dr.dollars = "$"
-		elif dr.zscore <= -1:
+		elif dr.zscore <= -.5:
 			dr.dollars = "$$"
-		elif dr.zscore < 1:
+		elif dr.zscore < .5:
 			dr.dollars = "$$$"
-		elif dr.zscore < 2:
+		elif dr.zscore < 1.5:
 			dr.dollars = "$$$$"
 		else:
 			dr.dollars = "$$$$$"
