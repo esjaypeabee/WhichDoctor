@@ -3,6 +3,7 @@ from sqlalchemy import func, distinct
 import model
 import search
 import spellchecker
+import ast
 # import lookuptable
 
 #### IT'S HCPCS
@@ -16,12 +17,16 @@ PUNCTUATION = '!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~'
 def index():
 	return render_template('index.html')
 
+# def build_med_query(search_terms):
+
+
 @app.route("/search_results")
 def search_results():
 	"""Displays a list of doctors matching a speciality in a zipcode (eventually)"""
 	# change this later to be specialty. Get speciality as a dropdown menu??
 	zipcode = request.args.get("zipcode")
 	search_terms = request.args.get("search-terms")
+	location_data = request.args.get("location-data")
 
 	session = model.connect()
 
@@ -48,7 +53,6 @@ def search_results():
 					return render_template('suggestions.html',zipcode=zipcode, suggestions=suggestions)
 
 			else:
-
 				if specialties:
 					q1 = query.filter(model.Provider.specialty.in_(specialties))
 					if not codes:
@@ -65,10 +69,17 @@ def search_results():
 		 				print "\n\n ************ I'm using the union \n\n"
 		 				query = q1.union(q2)
 
-
+		if location_data and location_data != '':
+			print "\n\n *************location data************ \n\n"
+			print "Before:", type(location_data), location_data
+			location_dict = ast.literal_eval(location_data)
+			print "After:", type(location_dict), location_dict
+			# ,model.Provider.lat > location_dict['minlat'], model.Provider.lng < location_dict['maxlng'], model.Provider.lng > location_dict['minlng']
+			query = query.filter(model.Provider.lat < location_dict['maxlat'],model.Provider.lat > location_dict['minlat'], model.Provider.lng < location_dict['maxlng'], model.Provider.lng > location_dict['minlng'])
 		# if user entered a zipcode 
-		if zipcode != '':
+		elif zipcode != '':
 			query = query.filter(model.Provider.short_zip == int(zipcode[:5]))
+
 
 	# run the query
 	doctor_list = query.limit(20).all()

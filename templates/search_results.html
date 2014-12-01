@@ -2,7 +2,10 @@
 
    
   <div id="allresults" class="container">
-    <div div id="map-panel" class="col-md-5" style="height: 400px;"></div> 
+    <div class="col-md-5" >
+      <div id="map-panel" style="height: 400px;"> </div>
+      <button class="btn btn-primary" id='map-search'>Search in Map</button>
+    </div> 
     <div id="results-table" class="col-md-7 pager tablesorter-pager">
       <table class="table table-striped tablesorter" id='drtable'>
            <thead>
@@ -106,7 +109,6 @@
 
       }
 
-
       $.tablesorter.addParser({ 
         // set a unique id 
         id: 'numdollars', 
@@ -122,6 +124,7 @@
           type: 'numeric' 
         }); 
 
+
       $(document).ready(function() { 
           // alert("document is ready");
 
@@ -132,6 +135,30 @@
         var pins_layer = L.mapbox.featureLayer(geojson).addTo(map);
 
         map.fitBounds(pins_layer.getBounds());
+
+        $('#map-search').click(function(){
+          console.log("getting the mapbounds...");
+          latlng = map.getBounds();
+          console.log(latlng);
+          console.log(typeof(latlng));
+
+          jsonBounds = {
+            maxlat: latlng._northEast.lat,
+            maxlng: latlng._northEast.lng,
+            minlat: latlng._southWest.lat,
+            minlng: latlng._southWest.lng
+          };
+
+          bounds = JSON.stringify(jsonBounds);
+
+          var url = "/search_results?"+ $("#search_form").serialize()+ "&location-data="+bounds;
+
+          console.log(url);
+
+          $('#display-doctors').load(url);
+          
+        });
+
 
         $("#sticker").sticky({topSpacing:10});
 
