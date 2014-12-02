@@ -71,7 +71,7 @@ def calc_zscore():
 
 
 def main():
-	calc_specialties()
+	#calc_specialties()
 	calc_zscore()
 
 if __name__ == '__main__':

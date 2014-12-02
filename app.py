@@ -63,26 +63,25 @@ def search_results():
 								suggestions=suggestions)
 
 			# if search.py finds matches
-			else:
-				if specialties:
-					# filter for any applicable specialties
-					q1 = query.filter(model.Provider.specialty.in_(specialties))
-					if not codes:
-						# if no procedures match, this becomes our base query
-						query = q1
+			if specialties:
+				# filter for any applicable specialties
+				q1 = query.filter(model.Provider.specialty.in_(specialties))
+				if not codes:
+					# if no procedures match, this becomes our base query
+					query = q1
 
-				if codes:
-					# get a list of doctors that perform the procedures
-					npis = session.query(model.Claim.npi)\
-						.filter(model.Claim.hcpcs_code.in_(codes)).all()
-		 			q2 = query.filter\
-		 				(model.Provider.npi.in_([npi[0] for npi in npis]))
-		 			if not specialties:
-		 				query = q2
-		 			else:
-		 				# if the query matches both procedures and specialties,
-		 				# use the union of those two queries
-		 				query = q1.union(q2)
+			if codes:
+				# get a list of doctors that perform the procedures
+				npis = session.query(model.Claim.npi)\
+					.filter(model.Claim.hcpcs_code.in_(codes)).all()
+	 			q2 = query.filter\
+	 				(model.Provider.npi.in_([npi[0] for npi in npis]))
+	 			if not specialties:
+	 				query = q2
+	 			else:
+	 				# if the query matches both procedures and specialties,
+	 				# use the union of those two queries
+	 				query = q1.union(q2)
 
 		# check if the user searched using the map
 		if location_data:

@@ -196,8 +196,7 @@ def main(session):
     load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
     load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
     load_claims(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    # before running the last function, run the functions in calctest.py
-    # load_specialty_lookup(session, "Data/specialtylookup.csv")
+    load_specialty_lookup(session, "Data/specialtylookup.csv")
 
 
 if __name__ == "__main__":
