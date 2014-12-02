@@ -18,16 +18,32 @@ SF_ZIPS = [94102, 94103, 94104, 94105,
 			94129, 94130, 94131, 94132, 
 			94133, 94134, 94158]
 
+# key for google geocoder
 G_KEY = os.environ.get('G_KEY')
 
-
 def load_providers(session, filename):
+	"""
+	Seeds the providers table with providers from medicare's tab separated file.
+
+	Medicare's tab separated file contains every doctor that filed a claim in 
+	2012. Each type of claim has one line, so any doctor can have multiple lines.
+	The following checks are in place:
+	- Checks whether the provider is in San Francisco using the provider's zip.
+	- Checks whether the provider has already been added to session using the 
+	provider_dict
+
+	The database includes each provider's office's latitude and longitude. This
+	is found using google's geocoder, which has a rate limit of 5 calls per 
+	second. This loop has a time delay built in to avoid this rate limit.
+	"""
+
 	print "Loading providers..."
+
 	provider_dict = {}
 
 	with open(filename, 'rb') as csvfile:
 
-		# get rid of header line and copyright statement
+		# skip the header line and copyright statement
 		header = csvfile.next()
 		copyright = csvfile.next()
 
@@ -52,6 +68,8 @@ def load_providers(session, filename):
 					provider.addy2 			  = line[8].strip() 
 					provider.city 			  = line[9].strip() 
 					provider.zipcode 		  = line[10].strip()
+					# the tab separate file only contains the provider's 9 digit
+					# zip code, here it's loaded as the 5 digit code.
 					provider.short_zip		  = provider.zipcode[:5]
 					provider.state 			  = line[11].strip() 
 					provider.country		  = line[12].strip()  
@@ -59,47 +77,42 @@ def load_providers(session, filename):
 					provider.mc_participation = line[14].strip()
 
 					full_address = provider.addy1 +' '+ provider.city +' '+ provider.state
-					# print full_address
+
 					# feed the full address into the geocoder to get lat long
 					geocode = Geocoder(G_KEY).geocode(full_address)
 					provider.lat = geocode[0].coordinates[0]
 					provider.lng = geocode[0].coordinates[1]
 
-					# claims = session.query(model.Claim).filter(model.Claim.npi == provider.npi).all()
-					# charges = [float(claim.avg_submitted_chrg) for claim in claims]
-					# avg = sum(charges)/len(charges)
-					# mean = spec_dict.thedict[lookup.specialty][0]
-					# stdev= spec_dict.thedict[lookup.specialty][1]
-					
-					# provider.zscore = (avg - mean)/stdev
-
 					session.add(provider)
-					print "Adding to session: ", provider.npi, provider.givenname, provider.surname
+					print "Adding to session: ", 
+					    provider.npi, provider.givenname, provider.surname
 					# delay the next call so that the google api doesn't kick 
 					# the request out.
 					time.sleep(1)
-					# print "adding provider to session"
+
 		session.commit()
 
 def load_claims(session, filename):
+	"""
+	Seeds the claims table with data from medicare's tab separated file.
+	"""
 
 	with open(filename, 'rb') as csvfile:
 
 		print "Loading Claims..."
 
-		# get rid of header line and copyright statement
+		# skip the header line and copyright statement
 		header = csvfile.next()
 		copyright = csvfile.next()
 
 		lines = csv.reader(csvfile, delimiter = '\t')
 
-
 		for line in lines:
 			if line[12].strip() == 'US':
-				#print "hi!"
+				# check if a claim is in SF
 				longzip = line[10].strip()
 				short_zip = int(longzip[:5])
-				#print "this claim is in SF!"
+
 				if short_zip in SF_ZIPS:
 					claim = model.Claim()
 					claim.npi 				 = line[0].strip()
@@ -119,6 +132,12 @@ def load_claims(session, filename):
 		session.commit()
 
 def load_procedures(session, filename):
+	"""
+	Seeds the procedures table with data from medicare's tab separated file.
+	Since multiple doctors could file the same type of claim, each procedure
+	could have multiple lines. This function checks if the procedure is already 
+	in the table using a dictionary.
+	"""
 
 	with open(filename, 'rb') as csvfile:
 
@@ -126,7 +145,7 @@ def load_procedures(session, filename):
 
 		procedure_dict = {}
 
-		# get rid of header line and copyright statement
+		# skip the header line and copyright statement
 		header = csvfile.next()
 		copyright = csvfile.next()
 
@@ -134,10 +153,10 @@ def load_procedures(session, filename):
 
 		for line in lines:
 			if line[12].strip() == 'US':
-				#print "hi!"
+				# check if procedure was claimed in SF
 				longzip = line[10].strip()
 				short_zip = int(longzip[:5])
-				#print "this claim is in SF!"
+
 				if short_zip in SF_ZIPS:
 					procedure = model.Procedure()
 					procedure.hcpcs_code 	= line[16].strip()
@@ -151,6 +170,10 @@ def load_procedures(session, filename):
 		session.commit()
 
 def load_specialty_lookup(session, filename):
+	"""
+	Seeds the table with provider specialties and their common english names, 
+	as well as the average claim amounts using a separate csv and a python dictionary.
+	"""
 
 	with open(filename, 'rb') as csvfile:
 
@@ -164,77 +187,22 @@ def load_specialty_lookup(session, filename):
 			lookup.stdev = spec_dict.thedict[lookup.specialty][1]
 			session.add(lookup)
 
-
 	session.commit()
 
-def main(session):
-    # when running for real, remove echo = true
-  
-    load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    # load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    load_claims(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
-    # load_specialty_lookup(session, "Data/specialtylookup.csv")
-    # load_procedure_terms(session, "procedure_index.csv")
-    # seed_claim_lookup(session, "procedure_index.csv")
-    # add_specialty_terms(session, 'specialty_list.txt')
+def main(session): 
 
+	# due to dependencies between the tables, the databases must get seeded in 
+	# this order. 
+    load_providers(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    load_procedures(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    load_claims(session, "Data/Medicare-Physician-and-Other-Supplier-PUF-CY2012/Medicare-Physician-and-Other-Supplier-PUF-CY2012.txt")
+    # before running the last function, run the functions in calctest.py
+    # load_specialty_lookup(session, "Data/specialtylookup.csv")
 
 
 if __name__ == "__main__":
-    s= model.connect()
-    main(s)
-
-
-
-# def add_specialty_terms(session, filename):
-# 	f = open(filename)
-# 	text = f.read()
-
-# 	# # get rid of 2 header lines
-# 	# headerline1 = f.next()
-# 	# headerline2 = f.next()
-
-# 	words = text.split()
-# 	for word in words:
-# 		lookup = model.Lookup()
-# 		print "line is: ", text
-# 		print "word is: ", word
-# 		# line = lookup.specialty			
-# 		# word = lookup.search_term
-# 		# session.add(lookup)
-
-# 	# session.commit()
-
-# def load_procedure_terms(session, filename):
-
-# 	with open(filename, 'rb') as csvfile:
-
-# 		lines = csv.reader(csvfile, delimiter = ',')
-# 		for line in lines:
-# 			proc_term = model.ProcSearchTerm()
-# 			proc_term.word = line[0]
-# 			proc_term.frequency = len(line[1])
-# 			session.add(proc_term)
-
-# 	session.commit()
-
-
-# def seed_claim_lookup(session, filename):
-
-# 	#print "\n\n **************** Opening CSV ************ \n\n"
-# 	with open(filename, 'rb') as csvfile:
-
-# 		lines = csv.reader(csvfile, delimiter = ',')
-# 		#print "\n\n **************** starting loop over the lines ************ \n\n"
-# 		for line in lines:
-# 			word = line[0]
-# 			#print "\n\n **************** the word is: ", word, " ************ \n\n"
-# 			if word != '':
-# 				for code in lookuptable.procedure_dict[word]:
-# 					#print "\n\n **************** the code ************", code, " \n\n"
-# 					claim_lookup = model.ClaimLookup()
-# 					claim_lookup.word_id = session.query(model.ProcSearchTerm.id).filter(model.ProcSearchTerm.word == word).one()[0]
-# 					claim_lookup.hcpcs_code = str(code)
-# 					session.add(claim_lookup)
-#			session.commit()
+	pass
+	# these are commented out so the database doesn't get reseeded.
+    # s= model.connect()
+    # main(s)
 

@@ -2,7 +2,8 @@
 {% block body %}
 
 <div id="provider-info" class="container">
-    <div id="map-panel" class="col-md-5" style="height: 400px; padding: 10px;"><!-- style="height: 100px;" --></div> 
+    <div id="map-panel" class="col-md-5" style="height: 400px; padding: 10px;">
+    </div> 
 	<div class='provider-card' id='provider-card' style="text-align: center;">
 		<h3>
 		{{ provider.givenname }} {{ provider.surname }}{% if provider.credential %}, {{ provider.credential }} {% endif %} <br>
@@ -16,44 +17,44 @@
 
    <script>
 
-      //var events = new MicroEvent();
-
       function drawMap(){
+        /*
+        * Using the Mapbox JS API, draws a map centered around a pin at a
+        * provider's office address.
+        */
 
-        //alert("drawMap is called");
-        console.log("drawMap got called!");
-        console.log({{provider.dollars}})
-
-        L.mapbox.accessToken = 'pk.eyJ1Ijoic2FyYWp1bGlhIiwiYSI6Imw5YlJaYmsifQ.6MhrXBPE3xp8hu3Nqbk4iQ';
+        L.mapbox.accessToken = 
+        'pk.eyJ1Ijoic2FyYWp1bGlhIiwiYSI6Imw5YlJaYmsifQ.6MhrXBPE3xp8hu3Nqbk4iQ';
 
         var map = L.mapbox.map('map-panel', 'sarajulia.k9kblj6l',
-            {scrollWheelZoom: false});
+            { //disables zoom when the user moves the scroll wheel
+              scrollWheelZoom: false
+            });
 
+        // create a pin at the doctor's address
+        // this feature is in the GeoJSON format
         var pinLayer = L.mapbox.featureLayer({
-	    // this feature is in the GeoJSON format: see geojson.org
-	    // for the full specification
-		  type: 'Feature',
-		  geometry: {
-	        type: 'Point',
-	        // coordinates here are in longitude, latitude order 
-	        coordinates: [
+		      type: 'Feature',
+		      geometry: {
+	          type: 'Point',
+	           // coordinates here are in longitude, latitude order 
+	           coordinates: [
                 {{ provider.lng }}, {{provider.lat }} 
               ]
-	   	  },
-	      properties: {
+	   	    },
+	        properties: {
 	       	title: "{{ provider.givenname }} {{provider.surname }}{% if provider.credential %}, {{provider.credential }} {% endif %}",
-            description: "{{provider.addy1 }} {% if provider.addy2 %} {{provider.addy2 }} {% endif %} {{provider.city }}, {{provider.state }} {{provider.short_zip }}",
+          description: "{{provider.addy1 }} {% if provider.addy2 %} {{provider.addy2 }} {% endif %} {{provider.city }}, {{provider.state }} {{provider.short_zip }}",
               // https://www.mapbox.com/foundations/an-open-platform/#simplestyle
-              'marker-size': 'small',
-              'marker-color': "#FFFF00",
-              'marker-line-color': '#2E2E2E',
-              'marker-allow-overlap': false,
-	      }
-		}).addTo(map);
+            'marker-size': 'small',
+            'marker-color': "#FFFF00",
+            'marker-line-color': '#2E2E2E',
+            'marker-allow-overlap': false,
+	        }
+		    }).addTo(map);
 
+        // center the map around the pin
         map.fitBounds(pinLayer.getBounds());
-
-        return map;
       }
 
       drawMap();

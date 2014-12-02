@@ -6,7 +6,10 @@ import re
 ENGINE = create_engine("postgresql+pg8000://postgres:1234@localhost/medicare_claims", echo=False)
 
 def is_toss_word(word):
-
+	"""
+	Checks if a word in a user's search query is among a list of unimportant
+	words.
+	"""
 	toss_words = ['doctor', 'room', 'care']
 	if word in toss_words:
 		return False
@@ -14,6 +17,12 @@ def is_toss_word(word):
 		return True
 
 def split_terms(term):
+	"""
+	Takes a long string of search terms, splits the string into seperate terms
+	and prepares them for querying.
+	Note on x-rays: PSQL's text based search could not link xray and x-ray, so
+	this function combines the two forms into one query.
+	"""
 	term_list = term.split()
 	# dedupe words
 	word_set = set(term_list)
@@ -32,26 +41,32 @@ def split_terms(term):
 
 
 def specialty(term):
+	"""
+	Takes search terms in a string, and queries a lookup table to retrieve 
+	provider specialty.
+	"""
 	conn = ENGINE.connect()
 
 	# split up the search terms
 	query_terms = split_terms(term)
 	# base query
 	query = select([model.SpecialtyLookup.specialty])\
-		.where(model.SpecialtyLookup.search_tsv.match(query_terms[0],postgresql_reconfig='english'))
+		.where(model.SpecialtyLookup.search_tsv\
+		.match(query_terms[0],postgresql_reconfig='english'))
 	# build more queries for intersection
 	for term in query_terms[1:]:
 		q = select([model.SpecialtyLookup.specialty])\
-			.where(model.SpecialtyLookup.search_tsv.match(term,postgresql_reconfig='english'))
+			.where(model.SpecialtyLookup.search_tsv\
+			.match(term,postgresql_reconfig='english'))
 		query = query.intersect(q)
 
-	# search for specialties in the lookup table
+	# search for specialties in the lookup table,
+	# returns a list of tuples
 	specialty_list = conn.execute(query).fetchall()
 	if specialty_list == []:
-		#print "found nothing"
 		return None
 	else:
-		#print "found these specialties:", specialty_list
+		# remove specialties from their tuples
 		return [specialty[0] for specialty in specialty_list]
 
 def procedure(term):
@@ -61,40 +76,50 @@ def procedure(term):
 	query_terms = split_terms(term)
 	# base query
 	query = select([model.Procedure.hcpcs_code])\
-		.where(model.Procedure.hcpcs_tsv.match(query_terms[0],postgresql_reconfig='english'))
+		.where(model.Procedure.hcpcs_tsv\
+		.match(query_terms[0],postgresql_reconfig='english'))
 	# build more select objects for intersection
 	for term in query_terms[1:]:
 		q = select([model.Procedure.hcpcs_code])\
-			.where(model.Procedure.hcpcs_tsv.match(term,postgresql_reconfig='english'))
+			.where(model.Procedure.hcpcs_tsv\
+			.match(term,postgresql_reconfig='english'))
 		query = query.intersect(q)
 
-	# run the query
+	# search for specialties in the lookup table,
+	# returns a list of tuples
 	code_list = conn.execute(query).fetchall()
 	if code_list == []:
 		return None
 	else:
-		return [code[0] for code in code_list]
-	
+		# remove specialties from their tuples
+		return [code[0] for code in code_list]	
 
 def main():
 	pass
-	#print procedure('hand xray')
-	#print specialty('heart surgeon')
 
 if __name__ == '__main__':
 	main()
 
 """
-THIS IS HOW WE QUERY NOW:
+To take advantage of PSQL's full text search functionality, the app needs to 
+change the search terms into a form called a 'TSQuery' and check it against a
+pre-indexed column of 'TSVectors'. SQLAlchemy query objects will not do this, 
+instead, a select object must be created and executed.
 
->>> select_thing = select([SpecialtyLookup.specialty]).where(SpecialtyLookup.search_tsv.match('urology',postgresql_reconfig='english'))
+THIS IS HOW TO CREATE AND RUN A SELECT OBJECT:
+
+>>> select_object = select([SpecialtyLookup.specialty])\
+	.where(SpecialtyLookup.search_tsv\
+	.match('urology',postgresql_reconfig='english'))
 >>> conn = ENGINE.connect()
->>> result = conn.execute(select_thing).fetchall()
+>>> result = conn.execute(select_object).fetchall()
 
 result is a list of tuples
 or = |
 and = & 
 the whole query:  
-specialties = conn.execute(select([SpecialtyLookup.specialty]).where(SpecialtyLookup.search_tsv.match('eye | brain',postgresql_reconfig='english'))).fetchall()
+specialties = conn.execute(select([SpecialtyLookup.specialty])\
+	.where(SpecialtyLookup.search_tsv\
+	.match('eye | brain',postgresql_reconfig='english'))).fetchall()
 
 """

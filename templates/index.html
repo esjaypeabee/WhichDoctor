@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 {% block body %}
-
+		<!-- This is the main search form, present on most pages -->
 		<h1>What are you looking for?</h1>
 
 		<form id='search_form'>
-		<!-- 	<input type='text' id='npi' name='npi'></input> -->
 			<input style="width: 500px" type='text' id='search-terms' name='search-terms' placeholder="Cardiologist, x-ray..."></input>
 			<input type='text' id='zip' name='zipcode' placeholder="Zipcode"></input>
 			<button type='submit' class="btn btn-primary" id='get-doctors'>Search</button>
@@ -16,6 +15,8 @@
 
 		<script>
 
+			//ajax call that loads the search results to 
+			//display-doctors div
 			$("#search_form").on('submit', function(event){
 
 				event.preventDefault();

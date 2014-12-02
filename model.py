@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session
 
 
 Base = declarative_base()
-# Claim.__table__.create(bind = ENGINE)
 ENGINE = create_engine("postgresql+pg8000://postgres:1234@localhost/medicare_claims", echo=False)
 session = scoped_session(sessionmaker(bind = ENGINE,
                                         autocommit = False,
@@ -41,8 +40,7 @@ class Provider(Base):
 		"""If a particular treatment is specified, takes the average
 		submitted charge of this doctor for that treatment. If no treatment, 
 		calculates the average of all of this doctor's claims."""
-		# this hits the database a lot - is there a better way?
-		# generate table that shows how pricey a docter is per procedure
+
 		charges = [float(claim.avg_submitted_chrg) for claim in self.claims]
 
 		self.avg = (sum(charges))/len(charges)
@@ -55,23 +53,26 @@ class Claim(Base):
 
 	__tablename__ = "claims"
 
-	id 					= Column(Integer, primary_key = True) 
-	npi 				= Column(Integer, ForeignKey('providers.npi'),
+	id 				= Column(Integer, primary_key = True) 
+	npi 			= Column(Integer, ForeignKey('providers.npi'),
 							nullable = True)
-	svc_place 			= Column(String(5), nullable = True)
-	hcpcs_code 			= Column(String(16), ForeignKey('procedures.hcpcs_code'))
+	svc_place 		= Column(String(5), nullable = True)
+	hcpcs_code 		= Column(String(16), ForeignKey('procedures.hcpcs_code'))
 	# number of times this service was billed
-	line_svc_cnt 		= Column(Float, nullable = True)
+	line_svc_cnt 	= Column(Float, nullable = True)
 	# number of unique patients who received this service 
-	bene_unique 		= Column(Float, nullable = True)
+	bene_unique 	= Column(Float, nullable = True)
 	# number of unique patients who recieved this service per day
-	bene_day_svc_cnt 	= Column(Float, nullable = True)
-	avg_mc_allowed 		= Column(Float, nullable = True)
-	sd_mc_allowed 		= Column(Float, nullable = True)
-	avg_submitted_chrg 	= Column(Float, nullable = True)
-	sd_submitted_chrg 	= Column(Float, nullable = True)
-	avg_mc_payment 		= Column(Float, nullable = True)
-	sd_mc_payment 		= Column(Float, nullable = True)
+	bene_day_svc_cnt = Column(Float, nullable = True)
+	# average maximum amount medicare will pay for a procedure
+	avg_mc_allowed 	= Column(Float, nullable = True)
+	sd_mc_allowed 	= Column(Float, nullable = True)
+	# average charge the provider submitted to medicare for a procedure
+	avg_submitted_chrg = Column(Float, nullable = True)
+	sd_submitted_chrg = Column(Float, nullable = True)
+	# average amount medicare actually paid for a procedure
+	avg_mc_payment 	= Column(Float, nullable = True)
+	sd_mc_payment 	= Column(Float, nullable = True)
 
 	provider = relationship("Provider", backref=backref("claims", order_by=id))
 	procedure = relationship("Procedure", backref=backref("claims", order_by=id))
@@ -81,11 +82,13 @@ class Procedure(Base):
 
 	__tablename__ = 'procedures'
 
-	hcpcs_code 			= Column(String(16), primary_key = True)
-	hcpcs_descr 		= Column(String(64), nullable = True)
-	hcpcs_tsv			= Column(TSVECTOR, index = True)
+	hcpcs_code 		= Column(String(16), primary_key = True)
+	hcpcs_descr 	= Column(String(64), nullable = True)
+	hcpcs_tsv		= Column(TSVECTOR, index = True)
 
 class SpecialtyLookup(Base):
+	""" Doctor specialties, thier common english names, the average and 
+	standard deviation for claim amounts in this specialty."""
 
 	__tablename__ = 'lookup'
 
@@ -95,28 +98,6 @@ class SpecialtyLookup(Base):
 	specialty   = Column(Text)
 	avg_claim 	= Column(Float)
 	stdev		= Column(Float)
-
-
-
-
-
-# class ProcSearchTerm(Base):
-
-# 	__tablename__ = 'psearchterms'
-
-# 	id 			= Column(Integer, primary_key = True)
-# 	word 		= Column(String(64))
-# 	frequency 	= Column(Integer, nullable = True)
-
-# class ClaimLookup(Base):
-
-# 	__tablename__ = 'claimlookup'
-
-# 	id 			= Column(Integer, primary_key = True)
-# 	word_id 	= Column(Integer, ForeignKey('psearchterms.id'))
-# 	hcpcs_code 	= Column(String(16), nullable = True)
-	
-# 	searchterm = relationship("ProcSearchTerm", backref=backref("codes", order_by=id))
 
 def connect():
     global ENGINE
@@ -131,6 +112,7 @@ def main():
 	pass
 	# engine = create_engine("sqlite:///medicare_claims.db", echo=True)
 	# Base.metadata.create_all(engine)
+	# Claim.__table__.create(bind = ENGINE)
 
 if __name__ == "__main__":
 	main()

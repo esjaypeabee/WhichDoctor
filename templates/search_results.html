@@ -1,22 +1,27 @@
 <html>
-
    
   <div id="allresults" class="container">
     <div class="col-md-5" >
+      <!-- The column where the map is displayed -->
       <div id="map-panel" style="height: 400px;"> </div>
       <button class="btn btn-primary" id='map-search'>Search in Map</button>
     </div> 
     <div id="results-table" class="col-md-7 pager tablesorter-pager">
+      <!-- The column where the list of providers is displayed -->
       <table class="table table-striped tablesorter" id='drtable'>
            <thead>
               <tr>
-                 <th><span class="glyphicon glyphicon-sort" aria-hidden="true"></span>   Doctor</th>
-                 <th><span class="glyphicon glyphicon-sort" aria-hidden="true"></span>   Specialty</th>
-                 <th><span class="glyphicon glyphicon-sort" aria-hidden="true"></span>   Cost</th>
+                 <th><span class="glyphicon glyphicon-sort" aria-hidden="true">
+                 </span>   Doctor</th>
+                 <th><span class="glyphicon glyphicon-sort" aria-hidden="true">
+                 </span>   Specialty</th>
+                 <th><span class="glyphicon glyphicon-sort" aria-hidden="true">
+                 </span>   Cost</th>
               </tr>
            </thead>
            <tbody>
-
+            <!-- Setting a counter to index the provider table so the app can
+              link the provider's row with its pin. -->
               {% set counter = 0 -%}
 
               {% for doctor in doctor_list %}
@@ -24,7 +29,7 @@
                 <tr class="drsrow" id="{{counter}}">
                     <td> <a href="/provider?id={{ doctor.npi }}"> {{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}</a> </td>
                     <td> {{ doctor.specialty }} </td>
-                    <td class="dollaz {{doctor.numdollars}}"> {{ doctor.dollars }} </td>
+                    <td> {{ doctor.dollars }} </td>
                 </tr>
 
                 {% set counter = counter + 1 -%}
@@ -33,43 +38,38 @@
               
             </tbody>
         </table>
-<!--         <nav>
-            <ul class="pager">
-              <li><a href="#" class=".first">First</a></li>
-              <li><a href="#" class=".prev">Previous</a></li>
-              <li><a href="#" class=".next">Next</a></li>
-              <li><a href="#" class=".last">Last</a></li>
-            </ul>
-          </ul>
-        </nav> -->
-    </div>
+      </div>
   </div>
     <script>
 
-      //var events = new MicroEvent();
-
       function drawMap(){
+        /*
+        * Using the Mapbox JS API, draws a map with a pin for each provider's 
+        * office, which is centered around the geographic middle of the pin layer.
+        */
 
-        //alert("drawMap is called");
-        console.log("drawMap got called!");
-
-        L.mapbox.accessToken = 'pk.eyJ1Ijoic2FyYWp1bGlhIiwiYSI6Imw5YlJaYmsifQ.6MhrXBPE3xp8hu3Nqbk4iQ';
+        L.mapbox.accessToken = 
+         'pk.eyJ1Ijoic2FyYWp1bGlhIiwiYSI6Imw5YlJaYmsifQ.6MhrXBPE3xp8hu3Nqbk4iQ';
 
         var map = L.mapbox.map('map-panel', 'sarajulia.k9kblj6l',
-            {scrollWheelZoom: false});
+            { //disables zoom when the user moves the scroll wheel
+              scrollWheelZoom: false
+            });
 
         return map;
       }
 
       function make_geojson(){
-        console.log("make_geojson got called!");
-
-        var i = 0;
+        /* 
+        * Creates a list of geoJson objects, each of which represents a
+        * provider's pin.  
+        */
 
         geojson = [];
 
         {% for doctor in doctor_list: %}
-
+          //assigns red pins to expensive doctors, yellow pins to average doctors,
+          //and green pins to inexpensive doctors.
           {% if doctor.dollars == "$" or doctor.dollars == "$$" %}
 
             var color = "#04B431";
@@ -100,16 +100,14 @@
               }
             });
 
-            //console.log("Added {{doctor.surname}}")
-
         {% endfor %}
 
-        //console.log(geojson);
         return geojson;
 
       }
 
       $.tablesorter.addParser({ 
+        // Gives tablesorter the ability to sort on the number of dollar signs.
         // set a unique id 
         id: 'numdollars', 
         is: function(s) { 
@@ -118,7 +116,8 @@
         }, 
         format: function(s) { 
           // format data for normalization 
-          return s.replace('$$$$$',5).replace('$$$$',4).replace('$$$',3).replace('$$',2).replace('$',1); 
+          return s.replace('$$$$$',5).replace('$$$$',4).replace('$$$',3)
+              .replace('$$',2).replace('$',1); 
           }, 
           // set type, either numeric or text 
           type: 'numeric' 
@@ -126,22 +125,27 @@
 
 
       $(document).ready(function() { 
-          // alert("document is ready");
 
+        // create a map
         var map = drawMap();
 
+        // create the geojson list
         geojson = make_geojson();
 
+        // add the pins to the map
         var pins_layer = L.mapbox.featureLayer(geojson).addTo(map);
 
+        // fit the map to the pins
         map.fitBounds(pins_layer.getBounds());
 
         $('#map-search').click(function(){
-          console.log("getting the mapbounds...");
-          latlng = map.getBounds();
-          console.log(latlng);
-          console.log(typeof(latlng));
+          /*
+          * Gets the northeast and southwest corners of the map, converts it to
+          * an object that can be passed back to the server.
+          */
 
+          latlng = map.getBounds();
+          
           jsonBounds = {
             maxlat: latlng._northEast.lat,
             maxlng: latlng._northEast.lng,
@@ -151,90 +155,37 @@
 
           bounds = JSON.stringify(jsonBounds);
 
-          var url = "/search_results?"+ $("#search_form").serialize()+ "&location-data="+bounds;
+          var url = "/search_results?"+ $("#search_form").serialize()+ 
+                    "&location-data="+bounds;
 
-          console.log(url);
-
+          //load up the new search results to the display panel
           $('#display-doctors').load(url);
           
         });
 
-
-        $("#sticker").sticky({topSpacing:10});
-
-        //THIS IS FOR CREATING A PAGINATED TABLE
-        // var pagerOptions = {
-        //   container: $(".pager"),
-
-        //   // apply disabled classname to the pager arrows when the rows at either extreme is visible - default is true
-        //   updateArrows: true,
-
-        //   // starting page of the pager (zero based index)
-        //   page: 0,
-
-        //   // Number of visible rows - default is 10
-        //   size: 20,
-
-        //   // css class names of pager arrows
-        //   cssNext: '.next', // next page arrow
-        //   cssPrev: '.prev', // previous page arrow
-        //   cssFirst: '.first', // go to first page arrow
-        //   cssLast: '.last', // go to last page arrow
-        //   cssGoto: '.gotoPage', // select dropdown to allow choosing a page
-        // };
-
+        //use tablesorter plug in to sort provider's table
         $("#drtable").tablesorter({ headers: {2: {sorter:'numdollars'} } });
-
-        //.tablesorterPager(pagerOptions);
      
-
+        //when the user mouses over a provider's row, the provider's pin
+        //enlarges.
         $(".drsrow")
           .on('mouseover', function(){
+
             var idx = parseInt($(this).attr('id'));
             geojson[idx].properties["marker-size"] = "medium";
             pins_layer.setGeoJSON(geojson);
             pins_layer.addTo(map);
-          //events.trigger('listing-mouse-in', idx);
+
           })
           .on('mouseout', function(){
+
             var idx = parseInt($(this).attr('id'));
             geojson[idx].properties["marker-size"] = "small";
             pins_layer.setGeoJSON(geojson);
             pins_layer.addTo(map);
-            //events.trigger('listing-mouse-out', idx);
+
           });
       }); 
 
-          // this section was for clustering the pins
-          // var markers = new L.MarkerClusterGroup();
-
-          // {% for doctor in doctor_list: %}
-          //     var title = "{{ doctor.givenname }} {{ doctor.surname }}{% if doctor.credential %}, {{ doctor.credential }} {% endif %}";
-          //     var address = "{{ doctor.addy1 }} {% if doctor.addy2 %} {{ doctor.addy2 }} {% endif %} {{ doctor.city }}, {{ doctor.state }} {{ doctor.short_zip }}";
-
-          //     {% if doctor.dollars == "$" or doctor.dollars == "$$" %}
-          //     var color = "#04B431";
-          //     {% elif doctor.dollars == '$$$' %}
-          //     var color = "#FFFF00";
-          //     {% elif doctor.dollars == '$$$$' or doctor.dollars == '$$$$$' %}
-          //     var color = "#DF0101";
-          //     {% endif %}
-
-          //     var marker = L.marker(new L.LatLng({{ doctor.lat }}, {{ doctor.lng }}), {
-          //         icon: L.mapbox.marker.icon({'marker-size': 'small',
-          //                                     'marker-color': color,
-          //                                     'marker-allow-overlap': false,}),
-          //         title: title,
-          //         description: address
-          //     });
-          //     marker.bindPopup(title);
-          //     markers.addLayer(marker);
-          // {% endfor %}
-
-          // map.addLayer(markers);
-
-      
-
     </script>
-
 </html>

@@ -7,6 +7,10 @@ import numpy
 session = model.connect()
 
 def calc_specialties():
+	"""
+	Calculates the average claim and standard deviation within each specialty,
+	and prints these values to a dictionary.
+	"""
 	specialty_dict = {}
 
 	# get a list of specialties
@@ -20,23 +24,26 @@ def calc_specialties():
 			.filter(model.Provider.specialty == specialty).all()
 		npis = [doctor.npi for doctor in doctors]
 
+		# get all the claims filed by those doctors
 		claims = session.query(model.Claim).filter(model.Claim.npi.in_(npis))
-		# print "\n\n ************ : ",specialty,": \n\n"
-		# print "\n\n ************ submissions: \n\n", submissions, "\n\n"
 		submissions = [claim.avg_submitted_chrg for claim in claims]
 
 		submission_array = numpy.array(submissions)
-		# stdev = numpy.std(submission_array)
 		mean = numpy.mean(submission_array)
 		stdev = numpy.std(submission_array)
 		specialty_dict[specialty] = [mean, stdev]
 
 	print specialty_dict
 
-
 def calc_zscore():
-
+	"""
+	Calculates the number of standard deviations away from the specialty mean 
+	(zscore) each doctor's average claim amount is, and updates the database 
+	with the doctor's zscore.
+	"""
+	# get all the doctors
 	doctors = session.query(model.Provider).distinct().all()
+	# count the number of doctors and set a counter to 0 for debugging purposes
 	num_docs = len(doctors)
 	counter = 0
 
@@ -54,43 +61,19 @@ def calc_zscore():
 			zscore = (doctor.avg - mean)/stdev
 
 		doctor.zscore = zscore	
-		# u = update(model.Provider).where(model.Provider.npi == doctor.npi)\
-		# 	.values({'zscore': zscore})
-		# session.execute(u)
 		counter += 1
 		session.add(doctor)
 
-		print "\n\n ************* ", doctor.givenname ," ", doctor.surname,"'s zscore is now: ", zscore
+		print "\n\n", doctor.givenname ," ", doctor.surname,"'s zscore is now: ", zscore
 		print counter, "/", num_docs, " \n\n"
 
 	session.commit()
 
 
-
-		# for dr in doctor_list:
-		# 	zscore = (dr.avg - mean)/stdev
-		# 	if zscore <= -2:
-		# 		dr.dollars = "$"
-		# 	elif zscore <= -1:
-		# 		dr.dollars = "$$"
-		# 	elif zscore < 1:
-		# 		dr.dollars = "$$$"
-		# 	elif zscore < 2:
-		# 		dr.dollars = "$$$$"
-		# 	else:
-		# 		dr.dollars = "$$$$$"
-
-
-
-		
-
-
-
-
-
 def main():
-	#calc_specialties()
+	calc_specialties()
 	calc_zscore()
 
 if __name__ == '__main__':
-	main()
+	# this is commented out so the database doesn't get reseeded.
+	# main()
