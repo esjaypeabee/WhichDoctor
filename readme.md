@@ -21,31 +21,31 @@ WhichDoctor gives users a tool to see past the dark magic that is medical pricin
 
 WhichDoctor's landing page contains two search boxes. One box allows the user to search for medical treatments by entering a medical specialty, such as 'Optomitrist' or 'eye doctor,'' or a medical procedure, such as 'eye exam.' The other box allows the user to search by location. Users may enter terms into either or both boxes.
 
-[!landing page]
+![landing page]
 (/screen_shots/landing.png)
 
 WhichDoctor will then build a SQLAlchemy query based on the user's input and run it over a PostgreSQL database. The database columns describing provider specialties and procedure descriptions have been indexed, tokenized (broken into individual words), and stemmed (reduced to their root words) using PostgreSQL's full text search capabilities. This allows for a faster search that more closely mirrors natural language queries.
 
-[!results]
+![results]
 (/screen_shots/results.png)
 
 The query's results are then loaded into a table on the page with an AJAX request. Clicking on the table's headings lets the user sort by name, specialty, or cost. Each provider's name is linked to a page that displays the doctor's office address.
 
-[!provider page]
+![provider page]
 (/screen_shots/provider.png)
 
 ## Spellchecking
 
 WhichDoctor will also check user input for spelling errors and suggests corrections. It does so using a [python algorithm](http://norvig.com/spell-correct.html) that finds all the words with an [edit distance](http://en.wikipedia.org/wiki/Edit_distance) of 2 from the user's input and checking it against a dictionary of known words. Clicking on a suggested word brings the user to a set of search results based on the suggested word.
 
-[!spellchecker]
+![spellchecker]
 (/screen_shots/spellchecker.png)
 
 ## The Map
 
 Each set of search results comes with a map created with the Mapbox Javascript API that shows the location of each provider's office. The colors of the pins correspond to how expensive each provider is likely to be. Mousing over each doctor in the table calls a JQuery function that causes that doctor's pin to enlarge, which is especially useful when many providers share the same address. The map automatically resizes and rezooms to display all of a search results' pins.
 
-[!mouseover]
+![mouseover]
 (/screen_shots/mouseover.png)
 
 Users may also change the search area by moving and rezooming the map, and clicking 'Search in Map'. WhichDoctor will then pull the boundary coordinates from the map and find all doctors matching the search terms whose offices fall within those coordinates. Each provider's office address has already been  geocoded using PyGeocoder and the Google Geocoder API.
