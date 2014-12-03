@@ -58,7 +58,7 @@ Since WhichDoctor does not change anything about the data, much of the informati
 
 In this version of the app, the data is limited to providers that practice in San Francisco.
 
-## Technologies used:
+## Technologies used
 
 PostgreSQL, SQLAlchemy, Python, Numpy, Flask, Jinja, Javascript, JQuery, Bootstrap, Mapbox, PyGeocoder
 
