@@ -19,7 +19,7 @@ WhichDoctor gives users a tool to see past the dark magic that is medical pricin
 
 ## Searching for a doctor
 
-WhichDoctor's landing page contains two search boxes. One box allows the user to search for medical treatments by entering a medical specialty, such as 'Optomitrist' or 'eye doctor,'' or a medical procedure, such as 'eye exam.' The other box allows the user to search by location. Users may enter terms into either or both boxes.
+WhichDoctor's landing page contains two search boxes. One box allows the user to search for medical treatments by entering a medical specialty, such as 'Optometrist' or 'eye doctor,'' or a medical procedure, such as 'eye exam.' The other box allows the user to search by location. Users may enter terms into either or both boxes.
 
 ![landing page]
 (/screen_shots/landing.png)
