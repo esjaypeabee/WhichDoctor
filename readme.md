@@ -95,11 +95,11 @@ Due to the fact that the data must be highly preprocessed, installation may take
 
 		Base.metadata.create_all(engine)
 
-5. If you don't have an account already, create a google api account and store the API key in your environment.(see [this blog post](http://andrewtorkbaker.com/using-environment-variables-with-django-settings) for an example)
+5. If you don't have an account already, create a google api account and store the API key in your environment. (see [this blog post](http://andrewtorkbaker.com/using-environment-variables-with-django-settings) for an example)
 
 6. With your virtual environment activated, run seed.py. Since each provider's address must be geocoded using google's geocoder api, and it has a rate limit of 5 calls per second, the script will delay to one call per second. As written, the script will take about 40 minutes to run. If you have a paid account with google and do not need to worry about a rate limit, you can comment out line 91 in seed.py to make the script run faster.
 
 7. Next, run calc_avg_std.py to insert each doctor's zscore into the database.
 
-8. Finally, python app.py and send your browser to http://localhost:5000/  Enjoy!
+8. Finally, run python app.py in your terminal and send your browser to http://localhost:5000/  Enjoy!
 
